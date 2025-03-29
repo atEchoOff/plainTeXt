@@ -239,6 +239,7 @@ const mathQuillInputRule = inputRules({
 function allDomNodesBetween(start, end) {
     // Return a list of all dom nodes between some start node and some end node
     // Include only elements that are children of the <p> rows of editor
+    // used for visible highlighting
     let nodes = [];
     let current = start;
 
@@ -250,11 +251,12 @@ function allDomNodesBetween(start, end) {
         current = current.firstChild;
     }
 
+    // iterate until we reach the end
     while (current !== end) {
         nodes.push(current);
         
         if (!current.nextSibling) {
-            // We are at the end of a <p>
+            // We are likely at the end of a <p>
             current = current.parentNode;
 
             if (end === current) {
@@ -273,7 +275,7 @@ function allDomNodesBetween(start, end) {
 }
 
 function refreshHighlights() {
-    // Handle highlighting of mathquill nodes
+    // Handle visible highlighting of mathquill nodes
 
     // Unhighlight all highlighted nodes
     const highlighted = [...document.getElementsByClassName("highlighted")];
