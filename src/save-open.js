@@ -23,6 +23,13 @@ function triggerPasteEvent(contents) {
     editorElement.firstChild.dispatchEvent(pasteEvent);
 }
 
+function getDocumentText() {
+    // Simulate Ctrl+A Ctrl+C
+    const doc = editor.state.doc;
+
+    return mathQuillPlugin.props.clipboardTextSerializer(doc.slice(0));
+}
+
 async function openFile(create) {
     const options = {
         startIn: 'documents',
@@ -53,5 +60,21 @@ async function openFile(create) {
     triggerPasteEvent(contents);
 }
 
+async function saveFile() {
+    // Get document contents and save
+    const contents = getDocumentText();
+    const writable = await fileHandle.createWritable();
+    await writable.write(contents);
+    await writable.close();
+}
+
 let button = document.getElementById("open-button");
 button.addEventListener("click", () => openFile());
+
+// Occasionally save the file if applicable
+window.setInterval(function() {
+    if (fileHandle) {
+        saveFile();
+        console.log("Saved!");
+    }
+}, 15000);
