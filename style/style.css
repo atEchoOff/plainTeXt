@@ -1,0 +1,4 @@
+#editor p {
+    /* Stop extra margin between lines in prosemirror */
+    margin: 0;
+}

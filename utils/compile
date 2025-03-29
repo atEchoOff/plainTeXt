@@ -1,0 +1,3 @@
+python3 utils/load_into.py src/main.js > dist/output.js
+babel dist/output.js --out-file dist/output.js
+browserify dist/output.js -o dist/output.js
