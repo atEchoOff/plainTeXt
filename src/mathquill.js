@@ -73,6 +73,26 @@ function textToFrag(pastedText) {
     return nodes;
 }
 
+function verticalAlign(mathquillElement) {
+    // If possible, align mathquill element by its first aligned character
+    // This will make sure mathquill elements align vertically with horizontal text
+    let rootBlock = mathquillElement.lastChild.firstChild;
+
+    // Move through parenthesis/brackets until we get to aligned math
+    while (rootBlock !== undefined && rootBlock.classList.contains("mq-bracket-container")) {
+        rootBlock = rootBlock.children[1].firstChild;
+    }
+
+    if (rootBlock === undefined) {
+        return;
+    }
+
+    // Line up the mathquill container so that the aligned text is centered vertically
+    let root = rootBlock.getBoundingClientRect();
+    let container = mathquillElement.getBoundingClientRect();
+    mathquillElement.style.verticalAlign = (root.top - container.top)/2 + (root.bottom - container.bottom)/2 + 2 + "px"
+}
+
 const mathQuillPlugin = new Plugin({
     key: new PluginKey("mathQuill"),
     props: {
@@ -125,6 +145,17 @@ const mathQuillPlugin = new Plugin({
             let frag = Fragment.fromArray(nodes);
 
             return new Slice(frag, slice.openStart, slice.openEnd);
+        }, 
+
+        handlePaste(view, event, slice) {
+            // Dont be doing any pasting when the user is trying to paste inside mathquill
+            // cringe
+            if (event.target.tagName === "TEXTAREA") {
+                // This is a mathquill element
+                return true; // true == dont paste
+            }
+
+            return false; // false == do paste ... what?
         }
     }
 });
@@ -161,9 +192,13 @@ class MathQuillNodeView {
             setTimeout(() => {this.mathField.focus();}, 0);
         }
 
+        // Realign element after pasting latex
+        setTimeout(() => {verticalAlign(this.dom);}, 0);
+
         // Event handlers
         this.dom.addEventListener('keydown', (e) => this.handleKeyDown(e));
         this.dom.querySelector('textarea').addEventListener('blur', (e) => this.handleBlur());
+        this.dom.addEventListener('paste', (e) => this.handlePaste(e));
     }
 
     handleKeyDown(event) {
@@ -181,6 +216,9 @@ class MathQuillNodeView {
         } else if (event.key === "Enter") {
             // Enter should do nothing inside mathquill elements
             event.preventDefault();
+        } else {
+            // Vertical align when new key entered
+            setTimeout(() => {verticalAlign(this.dom);}, 0);
         }
     }
 
@@ -200,6 +238,12 @@ class MathQuillNodeView {
             // node no longer exists, focus where it used to be
             editor.focus();
         }
+    }
+
+    handlePaste(e) {
+        // Manually write pasted text
+        // This is a necessary workaround for prosemirror cancelling paste event
+        this.mathField.write(e.clipboardData.getData("text"));
     }
 }
 
