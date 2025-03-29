@@ -63,3 +63,5 @@ editor = new EditorView(editorElement, {
 
 // Highlight mathquill elements if needed
 document.addEventListener('selectionchange', refreshHighlights);
+
+import_from_local("save-open.js");

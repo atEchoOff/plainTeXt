@@ -79,11 +79,11 @@ function verticalAlign(mathquillElement) {
     let rootBlock = mathquillElement.lastChild.firstChild;
 
     // Move through parenthesis/brackets until we get to aligned math
-    while (rootBlock !== undefined && rootBlock.classList.contains("mq-bracket-container")) {
+    while (rootBlock && rootBlock.classList && rootBlock.classList.contains("mq-bracket-container")) {
         rootBlock = rootBlock.children[1].firstChild;
     }
 
-    if (rootBlock === undefined) {
+    if (rootBlock === null || rootBlock.classList === null) {
         return;
     }
 
@@ -126,19 +126,48 @@ const mathQuillPlugin = new Plugin({
         },
 
         transformCopied(slice) {
-            // Copy elements and convert to latex-formatted string
+            // Copy elements right from editor
             const newContent = fragToTextFrag(slice.content);
 
             return new Slice(newContent, slice.openStart, slice.openEnd);
         },
 
+        clipboardTextSerializer(slice) {
+            // Handle how the text on the clipboard looks after copying
+            // This is necessary because transformCopied will double empty spaces
+            const newContent = fragToTextFrag(slice.content);
+
+            let lines = [];
+            for (let node of newContent.content) {
+                let fragment = node.content;
+
+                // Empty fragments are just empty lines
+                if (fragment.size == 0) {
+                    lines.push("");
+                } else {
+                    lines.push(fragment.content[0].text)
+                }
+            }
+
+            return lines.join("\n");
+        },
+
         transformPasted(slice) {
-            // Convert latex-formatted string into nodes for prosemirror
+            // Convert latex-formatted slice into pm
+            // This is part 2 of pasting
+            // See transformPastedText for part 1
             let nodes = [];
             slice.content.forEach((node) => {
                 // Nodes in slice.content are split by enter
                 // Create a paragraph with each node within this line
-                let newNode = schema.nodes.paragraph.create(null, Fragment.fromArray(textToFrag(node.textContent)));
+                let lineText = node.textContent;
+
+                // zero-width space added to make sure empty lines appear on paste
+                // remove them
+                if (lineText.endsWith("\u8203")) {
+                    lineText = lineText.substring(0, lineText.length - 1);
+                }
+                let newNode = schema.nodes.paragraph.create(null, Fragment.fromArray(textToFrag(lineText)));
                 nodes.push(newNode);
             });
 
@@ -156,6 +185,19 @@ const mathQuillPlugin = new Plugin({
             }
 
             return false; // false == do paste ... what?
+        },
+
+        transformPastedText(text) {
+            // Part 1 of pasting
+            // See transformPasted for part 2
+            // First add zero-width spaces to make sure empty lines count
+            let lines = text.split("\n");
+            
+            for (var i = 0; i < lines.length; i++) {
+                lines[i] += "\u8203";
+            }
+
+            return lines.join("\n");
         }
     }
 });
