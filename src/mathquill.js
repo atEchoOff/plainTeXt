@@ -1,5 +1,6 @@
 import { InputRule, inputRules } from "prosemirror-inputrules";
 import { Plugin, PluginKey, TextSelection } from "prosemirror-state";
+import { Fragment, Slice } from "prosemirror-model";
 
 // Global mathquill handler
 let MQ = MathQuill.getInterface(2);
@@ -10,8 +11,7 @@ function focusMathQuillNode(view, pos, isLeft) {
     // Retrieve the mathquill node
     // FIXME this is terrible. We have the node when we are calling this
     // but I cannot find a way to turn that node into the actual element for mathquill
-    const resolvedPos = view.state.doc.resolve(pos);
-    const mathQuillNodeView = view.nodeDOM(resolvedPos.pos);
+    const mathQuillNodeView = view.nodeDOM(pos);
 
     // Get the mathquill api
     const mathField = MQ(mathQuillNodeView);
@@ -23,6 +23,54 @@ function focusMathQuillNode(view, pos, isLeft) {
             mathField.moveToRightEnd();
         }
     }
+}
+
+function fragToTextFrag(fragment) {
+    // Convert fragment to latex form for copy
+    let nodes = [];
+    fragment.forEach((child) => {
+        if (child.type.name === "mathquill") {
+            // Convert mathquill node to $latex$ textnode
+            const textNode = schema.text("$" + child.attrs.latex + "$");
+            nodes.push(textNode);
+        } else if (child.content) {
+            // For non-leaf nodes, recursively transform their content
+            nodes.push(child.copy(fragToTextFrag(child.content)));
+        } else {
+            // Leaf nodes that are not MathQuill nodes are unchanged
+            nodes.push(child);
+        }
+    });
+    return Fragment.fromArray(nodes);
+}
+
+function textToFrag(pastedText) {
+    // "Inverse" of fragToTextFrag
+    // Convert string text to fragment to paste
+    const regex = /(\$[^\$]*\$)/g; // Look for $...$ in the text
+    let lastIndex = 0;
+    let nodes = [];
+    
+    // Loop through all $...$ instances in the text
+    pastedText.replace(regex, (match, p1, offset) => {
+        let text = pastedText.slice(lastIndex, offset);
+        if (offset > lastIndex) {
+            // This is text
+            nodes.push(schema.text(text));
+        }
+        // This is math
+        //                                               v Remove the $ from the start and end
+        nodes.push(schema.nodes.mathquill.create({latex: p1.slice(1, -1)}));
+
+        lastIndex = offset + p1.length;
+    });
+    
+    // Add any remaining text
+    if (lastIndex < pastedText.length) {
+        nodes.push(schema.text(pastedText.slice(lastIndex)));
+    }
+
+    return nodes;
 }
 
 const mathQuillPlugin = new Plugin({
@@ -56,6 +104,28 @@ const mathQuillPlugin = new Plugin({
             }
             return false; // no changes were made
         },
+
+        transformCopied(slice) {
+            // Copy elements and convert to latex-formatted string
+            const newContent = fragToTextFrag(slice.content);
+
+            return new Slice(newContent, slice.openStart, slice.openEnd);
+        },
+
+        transformPasted(slice) {
+            // Convert latex-formatted string into nodes for prosemirror
+            let nodes = [];
+            slice.content.forEach((node) => {
+                // Nodes in slice.content are split by enter
+                // Create a paragraph with each node within this line
+                let newNode = schema.nodes.paragraph.create(null, Fragment.fromArray(textToFrag(node.textContent)));
+                nodes.push(newNode);
+            });
+
+            let frag = Fragment.fromArray(nodes);
+
+            return new Slice(frag, slice.openStart, slice.openEnd);
+        }
     }
 });
 
@@ -120,9 +190,16 @@ class MathQuillNodeView {
         const latex = this.mathField.latex();
 
         // Search for my node and set the new latex
+        // Mathquill node may no longer exist (ex. ctrl+z on element)
+        // In that case, we want to focus where we were before
         const pos = this.getPos();
-        const tr = editor.state.tr.setNodeMarkup(pos, null, {latex: latex});
-        editor.dispatch(tr);
+        if (pos !== undefined) {
+            const tr = editor.state.tr.setNodeMarkup(pos, null, {latex: latex});
+            editor.dispatch(tr);
+        } else {
+            // node no longer exists, focus where it used to be
+            editor.focus();
+        }
     }
 }
 
@@ -158,3 +235,64 @@ function insertMathQuillRule() {
 const mathQuillInputRule = inputRules({
     rules: [insertMathQuillRule()],
 });
+
+function allDomNodesBetween(start, end) {
+    // Return a list of all dom nodes between some start node and some end node
+    // Include only elements that are children of the <p> rows of editor
+    let nodes = [];
+    let current = start;
+
+    if (start === end) {
+        return [];
+    }
+
+    if (current.tagName === "P") {
+        current = current.firstChild;
+    }
+
+    while (current !== end) {
+        nodes.push(current);
+        
+        if (!current.nextSibling) {
+            // We are at the end of a <p>
+            current = current.parentNode;
+
+            if (end === current) {
+                // We are done :(
+                break;
+            }
+            
+            // Continue onto the next <p>
+            current = current.nextSibling.firstChild;
+        } else {
+            current = current.nextSibling;
+        }
+    }
+
+    return nodes;
+}
+
+function refreshHighlights() {
+    // Handle highlighting of mathquill nodes
+
+    // Unhighlight all highlighted nodes
+    const highlighted = [...document.getElementsByClassName("highlighted")];
+    for (var i = 0; i < highlighted.length; i++) {
+        highlighted[i].classList.remove("highlighted");
+    }
+
+    // Check if the selection contains mathquill
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+
+        // Highlight all nodes between the start and end of the selection
+        const nodes = allDomNodesBetween(range.startContainer, range.endContainer);
+        for (let node of nodes) {
+            if (node.classList && node.classList.contains("mq-math-mode")) {
+                // This is a mathquill node
+                node.classList.add("highlighted");
+            }
+        }
+    }
+}

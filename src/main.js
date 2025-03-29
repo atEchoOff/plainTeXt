@@ -60,3 +60,6 @@ editor = new EditorView(editorElement, {
             },
         }
 });
+
+// Highlight mathquill elements if needed
+document.addEventListener('selectionchange', refreshHighlights);

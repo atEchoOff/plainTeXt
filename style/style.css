@@ -2,3 +2,8 @@
     /* Stop extra margin between lines in prosemirror */
     margin: 0;
 }
+
+.highlighted {
+    background-color: #3367D1;
+    color: white;
+}
