@@ -157,10 +157,12 @@ const mathQuillPlugin = new Plugin({
             // This is part 2 of pasting
             // See transformPastedText for part 1
             let nodes = [];
-            slice.content.forEach((node) => {
+            slice.content.forEach((paragraph) => {
+                paragraph.content.forEach((node) => {
+                    console.log(node);
                 // Nodes in slice.content are split by enter
                 // Create a paragraph with each node within this line
-                let lineText = node.textContent;
+                let lineText = node.text;
 
                 // zero-width space added to make sure empty lines appear on paste
                 // remove them
@@ -168,7 +170,7 @@ const mathQuillPlugin = new Plugin({
                     lineText = lineText.substring(0, lineText.length - 1);
                 }
                 let newNode = schema.nodes.paragraph.create(null, Fragment.fromArray(textToFrag(lineText)));
-                nodes.push(newNode);
+                })
             });
 
             let frag = Fragment.fromArray(nodes);
@@ -322,44 +324,6 @@ const mathQuillInputRule = inputRules({
     rules: [insertMathQuillRule()],
 });
 
-function allDomNodesBetween(start, end) {
-    // Return a list of all dom nodes between some start node and some end node
-    // Include only elements that are children of the <p> rows of editor
-    // used for visible highlighting
-    let nodes = [];
-    let current = start;
-
-    if (start === end) {
-        return [];
-    }
-
-    if (current.tagName === "P") {
-        current = current.firstChild;
-    }
-
-    // iterate until we reach the end
-    while (current !== end) {
-        nodes.push(current);
-        
-        if (!current.nextSibling) {
-            // We are likely at the end of a <p>
-            current = current.parentNode;
-
-            if (end === current) {
-                // We are done :(
-                break;
-            }
-            
-            // Continue onto the next <p>
-            current = current.nextSibling.firstChild;
-        } else {
-            current = current.nextSibling;
-        }
-    }
-
-    return nodes;
-}
-
 function refreshHighlights() {
     // Handle visible highlighting of mathquill nodes
 
@@ -370,17 +334,11 @@ function refreshHighlights() {
     }
 
     // Check if the selection contains mathquill
-    const selection = window.getSelection();
-    if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-
-        // Highlight all nodes between the start and end of the selection
-        const nodes = allDomNodesBetween(range.startContainer, range.endContainer);
-        for (let node of nodes) {
-            if (node.classList && node.classList.contains("mq-math-mode")) {
-                // This is a mathquill node
-                node.classList.add("highlighted");
-            }
+    const { from, to } = editor.state.selection;
+    editor.state.doc.nodesBetween(from, to, (node, pos) => {
+        if (node.type.name === "mathquill") {
+            // Highlight me!
+            editor.nodeDOM(pos).classList.add("highlighted");
         }
-    }
+    })
 }
