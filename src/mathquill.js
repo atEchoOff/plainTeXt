@@ -33,6 +33,10 @@ function fragToTextFrag(fragment) {
             // Convert mathquill node to $latex$ textnode
             const textNode = schema.text("$" + child.attrs.latex + "$");
             nodes.push(textNode);
+        } else if (child.type.name === "text" && child.marks.length && child.marks[0].type.name === "strong") {
+            // Serialize bold text in latex format
+            const textNode = schema.text("\\bold{" + child.text + "}");
+            nodes.push(textNode);
         } else if (child.content) {
             // For non-leaf nodes, recursively transform their content
             nodes.push(child.copy(fragToTextFrag(child.content)));
@@ -47,22 +51,31 @@ function fragToTextFrag(fragment) {
 function textToFrag(pastedText) {
     // "Inverse" of fragToTextFrag
     // Convert string text to fragment to paste
-    const regex = /(\$[^\$]*\$)/g; // Look for $...$ in the text
+    // Look for $...$ for latex or \bold{...} for bold text
+    const regex = /(\$[^\$]*\$)|(\\bold\{((?!\\bold\{)[^}]*)\})/g;
     let lastIndex = 0;
     let nodes = [];
     
-    // Loop through all $...$ instances in the text
-    pastedText.replace(regex, (match, p1, offset) => {
+    // Loop through matches
+    pastedText.replace(regex, (match, p1, p2, p3, offset) => {
         let text = pastedText.slice(lastIndex, offset);
         if (offset > lastIndex) {
             // This is text
             nodes.push(schema.text(text));
         }
-        // This is math
-        //                                               v Remove the $ from the start and end
-        nodes.push(schema.nodes.mathquill.create({latex: p1.slice(1, -1)}));
 
-        lastIndex = offset + p1.length;
+        if (/(\$[^\$]*\$)/.test(match)) {
+            // This is math
+            //                                               v Remove the $ from the start and end
+            nodes.push(schema.nodes.mathquill.create({latex: p1.slice(1, -1)}));
+
+            lastIndex = offset + match.length;
+        } else {
+            // This is bold text
+            nodes.push(schema.text(p3, [schema.marks.strong.create()]));
+
+            lastIndex = offset + match.length;
+        }
     });
     
     // Add any remaining text
@@ -157,12 +170,10 @@ const mathQuillPlugin = new Plugin({
             // This is part 2 of pasting
             // See transformPastedText for part 1
             let nodes = [];
-            slice.content.forEach((paragraph) => {
-                paragraph.content.forEach((node) => {
-                    console.log(node);
+            slice.content.forEach((node) => {
                 // Nodes in slice.content are split by enter
                 // Create a paragraph with each node within this line
-                let lineText = node.text;
+                let lineText = node.textContent;
 
                 // zero-width space added to make sure empty lines appear on paste
                 // remove them
@@ -170,7 +181,7 @@ const mathQuillPlugin = new Plugin({
                     lineText = lineText.substring(0, lineText.length - 1);
                 }
                 let newNode = schema.nodes.paragraph.create(null, Fragment.fromArray(textToFrag(lineText)));
-                })
+                nodes.push(newNode);
             });
 
             let frag = Fragment.fromArray(nodes);
