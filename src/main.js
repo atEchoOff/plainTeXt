@@ -3,7 +3,8 @@ import { EditorView } from "prosemirror-view";
 import { Schema, DOMParser } from "prosemirror-model";
 import { history, undo, redo } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
-import { baseKeymap } from "prosemirror-commands";
+import { baseKeymap, toggleMark } from "prosemirror-commands";
+import { schema as basicSchema } from "prosemirror-schema-basic";
 
 // Prosemirror editor object
 let editor = null;
@@ -40,15 +41,19 @@ const schema = new Schema({
         paragraph: paragraphSpec,
         text: textSpec,
         mathquill: mathQuillNodeSpec,
-    }
+    }, 
+    marks: basicSchema.spec.marks,
 });
+
+// Allow Ctrl+B for bold
+const toggleBold = toggleMark(schema.marks.strong);
 
 editor = new EditorView(editorElement, {
     state: EditorState.create({
         doc: DOMParser.fromSchema(schema).parse(editorElement),
             plugins: [
                 history(),
-                keymap({"Mod-z":undo, "Mod-y":redo}),
+                keymap({"Mod-z":undo, "Mod-y":redo, "Mod-b":toggleBold}),
                 keymap(baseKeymap),
                 mathQuillInputRule, // Create mathquill element on ;
                 mathQuillPlugin
@@ -62,6 +67,6 @@ editor = new EditorView(editorElement, {
 });
 
 // Highlight mathquill elements if needed
-document.addEventListener('selectionchange', refreshHighlights);
+document.addEventListener('selectionchange', () => setTimeout(() => {refreshHighlights()}, 0));
 
 import_from_local("save-open.js");
