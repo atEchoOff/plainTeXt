@@ -45,15 +45,40 @@ const schema = new Schema({
     marks: basicSchema.spec.marks,
 });
 
-// Allow Ctrl+B for bold
-const toggleBold = toggleMark(schema.marks.strong);
+// Toggle mark, disable all other marks
+function steamrollMark(mark) {
+
+    // The command to return
+    function command(state, dispatch) {
+        // Create a dispatch that adds commands to delete all other marks at selection first
+        const {from, to} = state.selection;
+        function newDispatch(transaction) {
+            for (let markName in schema.marks) {
+                if (markName !== mark.name) {
+                    transaction = transaction.removeMark(from, to, schema.marks[markName]);
+                    transaction = transaction.removeStoredMark(schema.marks[markName]);
+                }
+            }
+
+            return dispatch(transaction);
+        }
+
+        // Toggle the mark :)
+        return toggleMark(mark)(state, newDispatch);
+    }
+
+    return command;
+}
+
+const toggleBold = steamrollMark(schema.marks.strong);
+const toggleItalics = steamrollMark(schema.marks.em);
 
 editor = new EditorView(editorElement, {
     state: EditorState.create({
         doc: DOMParser.fromSchema(schema).parse(editorElement),
             plugins: [
                 history(),
-                keymap({"Mod-z":undo, "Mod-y":redo, "Mod-b":toggleBold}),
+                keymap({"Mod-z":undo, "Mod-y":redo, "Mod-b":toggleBold, "Mod-i":toggleItalics}),
                 keymap(baseKeymap),
                 mathQuillInputRule, // Create mathquill element on ;
                 mathQuillPlugin
