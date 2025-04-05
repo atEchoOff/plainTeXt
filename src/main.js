@@ -42,7 +42,20 @@ const schema = new Schema({
         text: textSpec,
         mathquill: mathQuillNodeSpec,
     }, 
-    marks: basicSchema.spec.marks,
+    marks: {
+        strong: basicSchema.spec.marks.get("strong"),
+        em: basicSchema.spec.marks.get("em"),
+        link: basicSchema.spec.marks.get("link"),
+        code: basicSchema.spec.marks.get("code"),
+        section: {
+            parseDOM: [{tag: "h2"}],
+            toDOM() { return ["h2", 0] }
+        },
+        subsection: {
+            parseDOM: [{tag: "h3"}],
+            toDOM() { return ["h3", 0] }
+        },
+    }
 });
 
 schema.marks.link.spec.inclusive = true;
@@ -66,7 +79,8 @@ function steamrollMark(mark) {
         }
 
         // Toggle the mark :)
-        return toggleMark(mark)(state, newDispatch);
+        toggleMark(mark)(state, newDispatch)
+        return true; // do not do default action
     }
 
     return command;
@@ -76,6 +90,8 @@ const toggleBold = steamrollMark(schema.marks.strong);
 const toggleItalics = steamrollMark(schema.marks.em);
 const toggleLink = steamrollMark(schema.marks.link);
 const toggleCode = steamrollMark(schema.marks.code);
+const toggleSection = steamrollMark(schema.marks.section);
+const toggleSubsection = steamrollMark(schema.marks.subsection);
 
 editor = new EditorView(editorElement, {
     state: EditorState.create({
@@ -87,8 +103,10 @@ editor = new EditorView(editorElement, {
                     "Mod-y":redo, 
                     "Mod-b":toggleBold, 
                     "Mod-i":toggleItalics,
-                    "Mod-l": toggleLink,
-                    "Mod-r": toggleCode
+                    "Mod-l":toggleLink,
+                    "Mod-r":toggleCode,
+                    "Shift-Mod-s":toggleSection,
+                    "Mod-s":toggleSubsection
                 }),
                 keymap(baseKeymap),
                 mathQuillInputRule, // Create mathquill element on ;

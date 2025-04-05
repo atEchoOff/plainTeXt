@@ -39,3 +39,11 @@ a::before {
 a::after {
     content: ")";
 }
+
+h2 {
+    display:inline;
+}
+
+h3 {
+    display:inline;
+}
