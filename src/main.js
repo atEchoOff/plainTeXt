@@ -75,6 +75,7 @@ function steamrollMark(mark) {
 const toggleBold = steamrollMark(schema.marks.strong);
 const toggleItalics = steamrollMark(schema.marks.em);
 const toggleLink = steamrollMark(schema.marks.link);
+const toggleCode = steamrollMark(schema.marks.code);
 
 editor = new EditorView(editorElement, {
     state: EditorState.create({
@@ -86,7 +87,9 @@ editor = new EditorView(editorElement, {
                     "Mod-y":redo, 
                     "Mod-b":toggleBold, 
                     "Mod-i":toggleItalics,
-                    "Mod-l": toggleLink}),
+                    "Mod-l": toggleLink,
+                    "Mod-r": toggleCode
+                }),
                 keymap(baseKeymap),
                 mathQuillInputRule, // Create mathquill element on ;
                 mathQuillPlugin
