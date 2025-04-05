@@ -44,6 +44,9 @@ function fragToTextFrag(fragment) {
             } else if (child.marks[0].type.name === "link") {
                 const textNode = schema.text("\\eqref{" + child.text + "}");
                 nodes.push(textNode);
+            } else if (child.marks[0].type.name === "code") {
+                const textNode = schema.text("\\texttt{" + child.text + "}");
+                nodes.push(textNode);
             }
         } else if (child.content) {
             // For non-leaf nodes, recursively transform their content
@@ -63,18 +66,20 @@ function textToFrag(pastedText) {
     const mqregex = /(\$[^\$]*\$)|/
     const textbfregex = /(\\textbf\{((?!\\textbf\{)[^}]*)\})|/
     const textitregex = /(\\textit\{((?!\\textit\{)[^}]*)\})|/
-    const eqrefregex = /(\\eqref\{((?!\\eqref\{)[^}]*)\})/
+    const eqrefregex = /(\\eqref\{((?!\\eqref\{)[^}]*)\})|/
+    const textttregex = /(\\texttt\{((?!\\texttt\{)[^}]*)\})/
     const regex = new RegExp(
         mqregex.source + 
         textbfregex.source + 
         textitregex.source +
-        eqrefregex.source
+        eqrefregex.source +
+        textttregex.source
     , "g")
     let lastIndex = 0;
     let nodes = [];
     
     // Loop through matches
-    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, offset) => {
+    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, offset) => {
         let text = pastedText.slice(lastIndex, offset);
         if (offset > lastIndex) {
             // This is text
@@ -100,6 +105,11 @@ function textToFrag(pastedText) {
         } else if (p7) {
             // This is a link
             nodes.push(schema.text(p7, [schema.marks.link.create()]));
+
+            lastIndex = offset + match.length;
+        } else if (p9) {
+            // This is a link
+            nodes.push(schema.text(p9, [schema.marks.code.create()]));
 
             lastIndex = offset + match.length;
         }
@@ -189,7 +199,9 @@ const mathQuillPlugin = new Plugin({
                 }
             }
 
-            return lines.join("\n");
+            return lines.join("\n")
+            .replaceAll(/\$\s*\\begin\{align\}/g, "\\begin{align*}")
+            .replaceAll(/\\end\{align\}\s*\$/g, "\\end{align*}");
         },
 
         transformPasted(slice) {
@@ -231,6 +243,8 @@ const mathQuillPlugin = new Plugin({
             // Part 1 of pasting
             // See transformPasted for part 2
             // First add zero-width spaces to make sure empty lines count
+            text = text.replaceAll(/\\begin\{align\**\}/g, "$\\begin{align}")
+                       .replaceAll(/\\end\{align\**\}/g, "\\end{align}$");
             let lines = text.split("\n");
             
             for (var i = 0; i < lines.length; i++) {
