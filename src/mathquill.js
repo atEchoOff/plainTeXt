@@ -35,7 +35,7 @@ function fragToTextFrag(fragment) {
             nodes.push(textNode);
         } else if (child.type.name === "text" && child.marks.length && child.marks[0].type.name === "strong") {
             // Serialize bold text in latex format
-            const textNode = schema.text("\\bold{" + child.text + "}");
+            const textNode = schema.text("\\textbf{" + child.text + "}");
             nodes.push(textNode);
         } else if (child.content) {
             // For non-leaf nodes, recursively transform their content
@@ -51,8 +51,8 @@ function fragToTextFrag(fragment) {
 function textToFrag(pastedText) {
     // "Inverse" of fragToTextFrag
     // Convert string text to fragment to paste
-    // Look for $...$ for latex or \bold{...} for bold text
-    const regex = /(\$[^\$]*\$)|(\\bold\{((?!\\bold\{)[^}]*)\})/g;
+    // Look for $...$ for latex or \textbf{...} for bold text
+    const regex = /(\$[^\$]*\$)|(\\textbf\{((?!\\textbf\{)[^}]*)\})/g;
     let lastIndex = 0;
     let nodes = [];
     
@@ -271,7 +271,18 @@ class MathQuillNodeView {
         } else if (event.key === "Enter") {
             // Enter should do nothing inside mathquill elements
             event.preventDefault();
-        } else {
+        } else if (event.ctrlKey && event.shiftKey && event.key === "B") {
+            event.preventDefault();
+            this.mathField.cmd("\\vecf");
+        } else if (event.ctrlKey && event.key === "b") {
+            event.preventDefault();
+            this.mathField.cmd("\\vect");
+        } else if (event.key === "&") {
+            event.preventDefault();
+            this.mathField.cmd("\\aligned");
+        }
+        
+        else {
             // Vertical align when new key entered
             setTimeout(() => {verticalAlign(this.dom);}, 0);
         }
