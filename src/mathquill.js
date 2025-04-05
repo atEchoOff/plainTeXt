@@ -47,6 +47,12 @@ function fragToTextFrag(fragment) {
             } else if (child.marks[0].type.name === "code") {
                 const textNode = schema.text("\\texttt{" + child.text + "}");
                 nodes.push(textNode);
+            } else if (child.marks[0].type.name === "section") {
+                const textNode = schema.text("\\section{" + child.text + "}");
+                nodes.push(textNode);
+            } else if (child.marks[0].type.name === "subsection") {
+                const textNode = schema.text("\\subsection{" + child.text + "}");
+                nodes.push(textNode);
             }
         } else if (child.content) {
             // For non-leaf nodes, recursively transform their content
@@ -67,19 +73,23 @@ function textToFrag(pastedText) {
     const textbfregex = /(\\textbf\{((?!\\textbf\{)[^}]*)\})|/
     const textitregex = /(\\textit\{((?!\\textit\{)[^}]*)\})|/
     const eqrefregex = /(\\eqref\{((?!\\eqref\{)[^}]*)\})|/
-    const textttregex = /(\\texttt\{((?!\\texttt\{)[^}]*)\})/
+    const textttregex = /(\\texttt\{((?!\\texttt\{)[^}]*)\})|/
+    const sectionregex = /(\\section\{((?!\\section\{)[^}]*)\})|/
+    const subsectionregex = /(\\subsection\{((?!\\subsection\{)[^}]*)\})/
     const regex = new RegExp(
         mqregex.source + 
         textbfregex.source + 
         textitregex.source +
         eqrefregex.source +
-        textttregex.source
+        textttregex.source +
+        sectionregex.source +
+        subsectionregex.source
     , "g")
     let lastIndex = 0;
     let nodes = [];
     
     // Loop through matches
-    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, offset) => {
+    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, offset) => {
         let text = pastedText.slice(lastIndex, offset);
         if (offset > lastIndex) {
             // This is text
@@ -110,6 +120,16 @@ function textToFrag(pastedText) {
         } else if (p9) {
             // This is a link
             nodes.push(schema.text(p9, [schema.marks.code.create()]));
+
+            lastIndex = offset + match.length;
+        } else if (p11) {
+            // This is a section
+            nodes.push(schema.text(p11, [schema.marks.section.create()]));
+
+            lastIndex = offset + match.length;
+        } else if (p13) {
+            // This is a subsection
+            nodes.push(schema.text(p13, [schema.marks.subsection.create()]));
 
             lastIndex = offset + match.length;
         }
