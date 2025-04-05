@@ -45,6 +45,8 @@ const schema = new Schema({
     marks: basicSchema.spec.marks,
 });
 
+schema.marks.link.spec.inclusive = true;
+
 // Toggle mark, disable all other marks
 function steamrollMark(mark) {
 
@@ -72,13 +74,19 @@ function steamrollMark(mark) {
 
 const toggleBold = steamrollMark(schema.marks.strong);
 const toggleItalics = steamrollMark(schema.marks.em);
+const toggleLink = steamrollMark(schema.marks.link);
 
 editor = new EditorView(editorElement, {
     state: EditorState.create({
         doc: DOMParser.fromSchema(schema).parse(editorElement),
             plugins: [
                 history(),
-                keymap({"Mod-z":undo, "Mod-y":redo, "Mod-b":toggleBold, "Mod-i":toggleItalics}),
+                keymap({
+                    "Mod-z":undo, 
+                    "Mod-y":redo, 
+                    "Mod-b":toggleBold, 
+                    "Mod-i":toggleItalics,
+                    "Mod-l": toggleLink}),
                 keymap(baseKeymap),
                 mathQuillInputRule, // Create mathquill element on ;
                 mathQuillPlugin
@@ -93,5 +101,14 @@ editor = new EditorView(editorElement, {
 
 // Highlight mathquill elements if needed
 document.addEventListener('selectionchange', () => setTimeout(() => {refreshHighlights()}, 0));
-
+document.addEventListener('click', (event) => {
+    if (event.target.tagName === "A") {
+        // We will attempt to scroll to the first mathquill element above the label
+        $('.mq-label:contains("' + event.target.innerText + '")').get().forEach((label) => {
+            if (label.compareDocumentPosition(event.target) & 0x04) {
+                label.scrollIntoView();
+            }
+        })
+    }
+})
 import_from_local("save-open.js");

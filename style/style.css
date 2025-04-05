@@ -22,3 +22,20 @@ body {
 p:has(.mq-align) {
     text-align:center;
 }
+
+p {
+    transform: translateZ(0);
+}
+
+a {
+    color: blue;
+    cursor: pointer;
+}
+
+a::before {
+    content: "(";
+}
+
+a::after {
+    content: ")";
+}

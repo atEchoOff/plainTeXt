@@ -41,6 +41,9 @@ function fragToTextFrag(fragment) {
             } else if (child.marks[0].type.name === "em") {
                 const textNode = schema.text("\\textit{" + child.text + "}");
                 nodes.push(textNode);
+            } else if (child.marks[0].type.name === "link") {
+                const textNode = schema.text("\\eqref{" + child.text + "}");
+                nodes.push(textNode);
             }
         } else if (child.content) {
             // For non-leaf nodes, recursively transform their content
@@ -59,17 +62,19 @@ function textToFrag(pastedText) {
     // Look for $...$ for math or \textbf{...} etc
     const mqregex = /(\$[^\$]*\$)|/
     const textbfregex = /(\\textbf\{((?!\\textbf\{)[^}]*)\})|/
-    const textitregex = /(\\textit\{((?!\\textit\{)[^}]*)\})/
+    const textitregex = /(\\textit\{((?!\\textit\{)[^}]*)\})|/
+    const eqrefregex = /(\\eqref\{((?!\\eqref\{)[^}]*)\})/
     const regex = new RegExp(
         mqregex.source + 
         textbfregex.source + 
-        textitregex.source
+        textitregex.source +
+        eqrefregex.source
     , "g")
     let lastIndex = 0;
     let nodes = [];
     
     // Loop through matches
-    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, offset) => {
+    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, offset) => {
         let text = pastedText.slice(lastIndex, offset);
         if (offset > lastIndex) {
             // This is text
@@ -90,6 +95,11 @@ function textToFrag(pastedText) {
         } else if (p5) {
             // This is italics text
             nodes.push(schema.text(p5, [schema.marks.em.create()]));
+
+            lastIndex = offset + match.length;
+        } else if (p7) {
+            // This is a link
+            nodes.push(schema.text(p7, [schema.marks.link.create()]));
 
             lastIndex = offset + match.length;
         }
