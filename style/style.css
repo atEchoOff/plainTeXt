@@ -18,3 +18,7 @@
 body {
     font-family: 'Symbola', Fallback, sans-serif;
 }
+
+p:has(.mq-align) {
+    text-align:center;
+}
