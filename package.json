@@ -30,6 +30,7 @@
     "prosemirror-model": "^1.25.0",
     "prosemirror-schema-basic": "^1.2.4",
     "prosemirror-state": "^1.4.3",
+    "prosemirror-transform": "^1.10.3",
     "prosemirror-view": "^1.38.1"
   }
 }

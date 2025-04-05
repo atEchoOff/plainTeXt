@@ -33,10 +33,15 @@ function fragToTextFrag(fragment) {
             // Convert mathquill node to $latex$ textnode
             const textNode = schema.text("$" + child.attrs.latex + "$");
             nodes.push(textNode);
-        } else if (child.type.name === "text" && child.marks.length && child.marks[0].type.name === "strong") {
-            // Serialize bold text in latex format
-            const textNode = schema.text("\\textbf{" + child.text + "}");
-            nodes.push(textNode);
+        } else if (child.type.name === "text" && child.marks.length) {
+            // Serialize mark as latex
+            if (child.marks[0].type.name === "strong") {
+                const textNode = schema.text("\\textbf{" + child.text + "}");
+                nodes.push(textNode);
+            } else if (child.marks[0].type.name === "em") {
+                const textNode = schema.text("\\textit{" + child.text + "}");
+                nodes.push(textNode);
+            }
         } else if (child.content) {
             // For non-leaf nodes, recursively transform their content
             nodes.push(child.copy(fragToTextFrag(child.content)));
@@ -51,28 +56,40 @@ function fragToTextFrag(fragment) {
 function textToFrag(pastedText) {
     // "Inverse" of fragToTextFrag
     // Convert string text to fragment to paste
-    // Look for $...$ for latex or \textbf{...} for bold text
-    const regex = /(\$[^\$]*\$)|(\\textbf\{((?!\\textbf\{)[^}]*)\})/g;
+    // Look for $...$ for math or \textbf{...} etc
+    const mqregex = /(\$[^\$]*\$)|/
+    const textbfregex = /(\\textbf\{((?!\\textbf\{)[^}]*)\})|/
+    const textitregex = /(\\textit\{((?!\\textit\{)[^}]*)\})/
+    const regex = new RegExp(
+        mqregex.source + 
+        textbfregex.source + 
+        textitregex.source
+    , "g")
     let lastIndex = 0;
     let nodes = [];
     
     // Loop through matches
-    pastedText.replace(regex, (match, p1, p2, p3, offset) => {
+    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, offset) => {
         let text = pastedText.slice(lastIndex, offset);
         if (offset > lastIndex) {
             // This is text
             nodes.push(schema.text(text));
         }
 
-        if (/(\$[^\$]*\$)/.test(match)) {
+        if (p1) {
             // This is math
             //                                               v Remove the $ from the start and end
             nodes.push(schema.nodes.mathquill.create({latex: p1.slice(1, -1)}));
 
             lastIndex = offset + match.length;
-        } else {
+        } else if (p3) {
             // This is bold text
             nodes.push(schema.text(p3, [schema.marks.strong.create()]));
+
+            lastIndex = offset + match.length;
+        } else if (p5) {
+            // This is italics text
+            nodes.push(schema.text(p5, [schema.marks.em.create()]));
 
             lastIndex = offset + match.length;
         }
