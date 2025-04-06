@@ -45,7 +45,6 @@ const schema = new Schema({
     marks: {
         strong: basicSchema.spec.marks.get("strong"),
         em: basicSchema.spec.marks.get("em"),
-        link: basicSchema.spec.marks.get("link"),
         code: basicSchema.spec.marks.get("code"),
         section: {
             parseDOM: [{tag: "h2"}],
@@ -55,10 +54,16 @@ const schema = new Schema({
             parseDOM: [{tag: "h3"}],
             toDOM() { return ["h3", 0] }
         },
+        link: {
+            parseDOM: [{tag: "a"}],
+            toDOM() { return ["a", {class: 'reference'}] }
+        },
+        citation: {
+            parseDOM: [{tag: "a"}],
+            toDOM() { return ["a", {class: 'citation'}] }
+        }
     }
 });
-
-schema.marks.link.spec.inclusive = true;
 
 // Toggle mark, disable all other marks
 function steamrollMark(mark) {
@@ -126,6 +131,8 @@ function applyCommand(state, dispatch) {
             tr = tr.setStoredMarks([schema.marks.section.create()]);
         } else if (command === "subsection") {
             tr = tr.setStoredMarks([schema.marks.subsection.create()]);
+        } else if (command === "cite") {
+            tr = tr.setStoredMarks([schema.marks.citation.create()]);
         }
 
         dispatch(tr);
@@ -158,6 +165,7 @@ const toggleLink = steamrollMark(schema.marks.link);
 const toggleCode = steamrollMark(schema.marks.code);
 const toggleSection = steamrollMark(schema.marks.section);
 const toggleSubsection = steamrollMark(schema.marks.subsection);
+const toggleCitation = steamrollMark(schema.marks.citation);
 
 editor = new EditorView(editorElement, {
     state: EditorState.create({
@@ -173,6 +181,7 @@ editor = new EditorView(editorElement, {
                     "Mod-r":toggleCode,
                     "Shift-Mod-s":toggleSection,
                     "Mod-s":toggleSubsection,
+                    "Mod-t":toggleCitation,
                     "{": applyCommand,
                     "}": exitCommand
                 }),
@@ -191,7 +200,7 @@ editor = new EditorView(editorElement, {
 // Highlight mathquill elements if needed
 document.addEventListener('selectionchange', () => setTimeout(() => {refreshHighlights()}, 0));
 document.addEventListener('click', (event) => {
-    if (event.target.tagName === "A") {
+    if (event.target.classList.contains('reference')) {
         // We will attempt to scroll to the last section/mq label with this inner text
         $('.mq-label:contains("' + event.target.innerText + '"), h2:contains("' + event.target.innerText + '"), h3:contains("' + event.target.innerText + '")').get().forEach((label) => {
             if (label.compareDocumentPosition(event.target) & 0x04) {
