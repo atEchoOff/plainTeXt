@@ -71,6 +71,10 @@ const schema = new Schema({
         citation: {
             parseDOM: [{tag: "a"}],
             toDOM() { return ["a", {class: 'citation'}] }
+        },
+        theorem: {
+            parseDOM: [{tag: "a"}],
+            toDOM() { return ["a", {class: 'theorem'}] }
         }
     }
 });
@@ -143,6 +147,8 @@ function applyCommand(state, dispatch) {
             tr = tr.setStoredMarks([schema.marks.subsection.create()]);
         } else if (command === "cite") {
             tr = tr.setStoredMarks([schema.marks.citation.create()]);
+        } else if (command === "theorem") {
+            tr = tr.setStoredMarks([schema.marks.theorem.create()]);
         }
 
         dispatch(tr);
