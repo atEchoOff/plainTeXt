@@ -75,6 +75,10 @@ const schema = new Schema({
         theorem: {
             parseDOM: [{tag: "a"}],
             toDOM() { return ["a", {class: 'theorem'}] }
+        },
+        qed: {
+            parseDOM: [{tag: "a"}],
+            toDOM() { return ["a", {class: 'qed'}] }
         }
     }
 });
@@ -149,6 +153,8 @@ function applyCommand(state, dispatch) {
             tr = tr.setStoredMarks([schema.marks.citation.create()]);
         } else if (command === "theorem") {
             tr = tr.setStoredMarks([schema.marks.theorem.create()]);
+        } else if (command === "qed") {
+            tr = tr.setStoredMarks([schema.marks.qed.create()]);
         }
 
         dispatch(tr);

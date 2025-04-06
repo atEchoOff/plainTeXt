@@ -80,3 +80,11 @@ h3 {
 p:has(.theorem) {
     font-style:italic;
 }
+
+.qed::after {
+    content: "\25a1";
+}
+
+p:has(.qed) {
+    text-align:center;
+}

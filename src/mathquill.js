@@ -61,6 +61,9 @@ function fragToTextFrag(fragment) {
             } else if (child.marks[0].type.name === "theorem") {
                 const textNode = schema.text("\\theorem{" + child.text + "}");
                 nodes.push(textNode);
+            } else if (child.marks[0].type.name === "qed") {
+                const textNode = schema.text("\\qed{ }");
+                nodes.push(textNode);
             }
         } else if (child.content) {
             // For non-leaf nodes, recursively transform their content
@@ -86,7 +89,8 @@ function textToFrag(pastedText) {
     const subsectionregex = /(\\subsection\{((?!\\subsection\{)[^}]*)\})|/
     const citeregex = /(\\cite\{((?!\\cite\{)[^}]*)\})|/
     const imageregex = /(\\includegraphics\{((?!\\includegraphics\{)[^}]*).png\})|/
-    const theoremregex = /(\\theorem\{((?!\\theorem\{)[^}]*)\})/
+    const theoremregex = /(\\theorem\{((?!\\theorem\{)[^}]*)\})|/
+    const qedregex = /(\\qed\{((?!\\qed\{)[^}]*)\})/
     const regex = new RegExp(
         mqregex.source + 
         textbfregex.source + 
@@ -97,13 +101,14 @@ function textToFrag(pastedText) {
         subsectionregex.source +
         citeregex.source +
         imageregex.source +
-        theoremregex.source
+        theoremregex.source +
+        qedregex.source
     , "g")
     let lastIndex = 0;
     let nodes = [];
     
     // Loop through matches
-    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, offset) => {
+    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, offset) => {
         let text = pastedText.slice(lastIndex, offset);
         if (offset > lastIndex) {
             // This is text
@@ -170,6 +175,11 @@ function textToFrag(pastedText) {
         } else if (p19) {
             // This is a theorem
             nodes.push(schema.text(p19, [schema.marks.theorem.create()]));
+
+            lastIndex = offset + match.length;
+        } else if (p21) {
+            // This is a theorem
+            nodes.push(schema.text(" ", [schema.marks.qed.create()]));
 
             lastIndex = offset + match.length;
         }
