@@ -290,6 +290,7 @@ class MathQuillNodeView {
                     let {tr} = view.state;
 
                     if (dir == MQ.R) {
+                        return; // This is temporary, I dont like leaving mq from the right
                         pos++;
                     }
                     
