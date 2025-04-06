@@ -27,17 +27,29 @@ p {
     transform: translateZ(0);
 }
 
-a {
+.reference {
     color: blue;
     cursor: pointer;
 }
 
-a::before {
+.reference::before {
     content: "(";
 }
 
-a::after {
+.reference::after {
     content: ")";
+}
+
+.citation {
+    color: rgb(255, 72, 102);
+}
+
+.citation::before {
+    content: "[";
+}
+
+.citation::after {
+    content: "]";
 }
 
 h2 {

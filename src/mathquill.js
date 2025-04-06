@@ -53,6 +53,9 @@ function fragToTextFrag(fragment) {
             } else if (child.marks[0].type.name === "subsection") {
                 const textNode = schema.text("\\subsection{" + child.text + "}");
                 nodes.push(textNode);
+            } else if (child.marks[0].type.name === "citation") {
+                const textNode = schema.text("\\cite{" + child.text + "}");
+                nodes.push(textNode);
             }
         } else if (child.content) {
             // For non-leaf nodes, recursively transform their content
@@ -75,7 +78,8 @@ function textToFrag(pastedText) {
     const eqrefregex = /(\\eqref\{((?!\\eqref\{)[^}]*)\})|/
     const textttregex = /(\\texttt\{((?!\\texttt\{)[^}]*)\})|/
     const sectionregex = /(\\section\{((?!\\section\{)[^}]*)\})|/
-    const subsectionregex = /(\\subsection\{((?!\\subsection\{)[^}]*)\})/
+    const subsectionregex = /(\\subsection\{((?!\\subsection\{)[^}]*)\})|/
+    const citeregex = /(\\cite\{((?!\\cite\{)[^}]*)\})/
     const regex = new RegExp(
         mqregex.source + 
         textbfregex.source + 
@@ -83,13 +87,14 @@ function textToFrag(pastedText) {
         eqrefregex.source +
         textttregex.source +
         sectionregex.source +
-        subsectionregex.source
+        subsectionregex.source +
+        citeregex.source
     , "g")
     let lastIndex = 0;
     let nodes = [];
     
     // Loop through matches
-    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, offset) => {
+    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, offset) => {
         let text = pastedText.slice(lastIndex, offset);
         if (offset > lastIndex) {
             // This is text
@@ -130,6 +135,11 @@ function textToFrag(pastedText) {
         } else if (p13) {
             // This is a subsection
             nodes.push(schema.text(p13, [schema.marks.subsection.create()]));
+
+            lastIndex = offset + match.length;
+        } else if (p15) {
+            // This is a citation
+            nodes.push(schema.text(p15, [schema.marks.citation.create()]));
 
             lastIndex = offset + match.length;
         }
