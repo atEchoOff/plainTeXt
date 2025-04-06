@@ -33,6 +33,8 @@ function fragToTextFrag(fragment) {
             // Convert mathquill node to $latex$ textnode
             const textNode = schema.text("$" + child.attrs.latex + "$");
             nodes.push(textNode);
+        } else if (child.type.name === "image") {
+            nodes.push(child.copy(child));
         } else if (child.type.name === "text" && child.marks.length) {
             // Serialize mark as latex
             if (child.marks[0].type.name === "strong") {
@@ -79,7 +81,8 @@ function textToFrag(pastedText) {
     const textttregex = /(\\texttt\{((?!\\texttt\{)[^}]*)\})|/
     const sectionregex = /(\\section\{((?!\\section\{)[^}]*)\})|/
     const subsectionregex = /(\\subsection\{((?!\\subsection\{)[^}]*)\})|/
-    const citeregex = /(\\cite\{((?!\\cite\{)[^}]*)\})/
+    const citeregex = /(\\cite\{((?!\\cite\{)[^}]*)\})|/
+    const imageregex = /(\\includegraphics\{((?!\\includegraphics\{)[^}]*).png\})/
     const regex = new RegExp(
         mqregex.source + 
         textbfregex.source + 
@@ -88,13 +91,14 @@ function textToFrag(pastedText) {
         textttregex.source +
         sectionregex.source +
         subsectionregex.source +
-        citeregex.source
+        citeregex.source +
+        imageregex.source
     , "g")
     let lastIndex = 0;
     let nodes = [];
     
     // Loop through matches
-    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, offset) => {
+    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, offset) => {
         let text = pastedText.slice(lastIndex, offset);
         if (offset > lastIndex) {
             // This is text
@@ -141,6 +145,22 @@ function textToFrag(pastedText) {
             // This is a citation
             nodes.push(schema.text(p15, [schema.marks.citation.create()]));
 
+            lastIndex = offset + match.length;
+        } else if (p17) {
+            // This is an image
+            if (p17 in imageData) {
+                // We are currently setting up, and a previous definition already exists for img
+                let imgNode = schema.nodes.image.create({
+                    src:imageData[p17]['src'],
+                    title:imageData[p17]['title'],
+                    aria:''
+                }, schema.text(imageData[p17]['title']));
+
+                nodes.push(imgNode);
+                // The imageData is done for this, we can remove it
+                // If we keep it in, images will reset themselves from global dictionary
+                delete imageData[p17];
+            }
             lastIndex = offset + match.length;
         }
     });
@@ -218,14 +238,21 @@ const mathQuillPlugin = new Plugin({
             const newContent = fragToTextFrag(slice.content);
 
             let lines = [];
+            let imgCounter = 0;
             for (let node of newContent.content) {
                 let fragment = node.content;
 
-                // Empty fragments are just empty lines
                 if (fragment.size == 0) {
+                    // Empty fragments are just empty lines
                     lines.push("");
+                } else if (fragment.content && fragment.content.type && fragment.content.type.name === "image") {
+                    // The counter is meaningless unless copying the whole doc
+                    // For now it is needed to save images between sessions
+                    lines.push("\\includegraphics{" + (imgCounter++) + ".png}");
+                } else if (fragment.type && fragment.type.name === "image") {
+                    lines.push("\\includegraphics{" + (imgCounter++) + ".png}");
                 } else {
-                    lines.push(fragment.content[0].text)
+                    lines.push(fragment.content[0].text);
                 }
             }
 
@@ -242,14 +269,31 @@ const mathQuillPlugin = new Plugin({
             slice.content.forEach((node) => {
                 // Nodes in slice.content are split by enter
                 // Create a paragraph with each node within this line
-                let lineText = node.textContent;
+                var newNode;
+                if (node && node.type && node.type.name == "image") {
+                    // This is when a pure image is being pasted
+                    newNode = node;
+                } else if (node.content.content && node.content.content[0] && node.content.content[0].type.name == "image") {
+                    // When a line of pasted text is an image
+                    newNode = node.content.content[0];
+                } else {
+                    let lineText = node.textContent;
 
-                // zero-width space added to make sure empty lines appear on paste
-                // remove them
-                if (lineText.endsWith("\u8203")) {
-                    lineText = lineText.substring(0, lineText.length - 1);
+                    // zero-width space added to make sure empty lines appear on paste
+                    // remove them
+                    if (lineText.endsWith("\u8203")) {
+                        lineText = lineText.substring(0, lineText.length - 1);
+                    }
+                    let ttf = textToFrag(lineText);
+                    if (ttf && ttf[0] && ttf[0].type && ttf[0].type.name === "image") {
+                        // This originally was a text node containing \includegraphics
+                        // image data was found in imageData, so ttf is an image node
+                        // dont put it in a paragraph
+                        newNode = ttf[0];
+                    } else {
+                        newNode = schema.nodes.paragraph.create(null, Fragment.fromArray(ttf));
+                    }
                 }
-                let newNode = schema.nodes.paragraph.create(null, Fragment.fromArray(textToFrag(lineText)));
                 nodes.push(newNode);
             });
 

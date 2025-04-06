@@ -5,6 +5,14 @@ import { history, undo, redo } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { baseKeymap, toggleMark } from "prosemirror-commands";
 import { schema as basicSchema } from "prosemirror-schema-basic";
+import {
+    defaultSettings,
+    imagePlugin,
+    
+} from "prosemirror-image-plugin";
+
+// Setup images
+let imagePluginSettings = {...defaultSettings};
 
 // Prosemirror editor object
 let editor = null;
@@ -33,6 +41,7 @@ const textSpec = {
 // Load in mathquill setup
 // this is a fake command, babel doesnt like to combine files for some reason
 import_from_local("mathquill.js");
+import_from_local("image.js");
 
 const schema = new Schema({
     nodes: {
@@ -41,7 +50,8 @@ const schema = new Schema({
         paragraph: paragraphSpec,
         text: textSpec,
         mathquill: mathQuillNodeSpec,
-    }, 
+        image: imageSpec
+        },
     marks: {
         strong: basicSchema.spec.marks.get("strong"),
         em: basicSchema.spec.marks.get("em"),
@@ -186,6 +196,7 @@ editor = new EditorView(editorElement, {
                     "}": exitCommand
                 }),
                 keymap(baseKeymap),
+                imagePlugin({...imagePluginSettings}),
                 mathQuillInputRule, // Create mathquill element on ;
                 mathQuillPlugin
             ],
