@@ -46,7 +46,14 @@ async function openFile(create) {
 
     // Get file and contents
     const file = await fileHandle.getFile();
-    const contents = await file.text();
+    let contents = await file.text();
+    if (contents.includes("||")) {
+        // Load previous image data from saved file
+        // it will all go away once original paste event completes
+        imageData = contents.substring(contents.lastIndexOf("||") + 2);
+        contents = contents.substring(0, contents.lastIndexOf("||"));
+        imageData = JSON.parse(imageData);
+    }
     document.title = file.name; // change window name to file title
 
     // Simulate Ctrl+A Ctrl+V
@@ -62,7 +69,25 @@ async function openFile(create) {
 
 async function saveFile() {
     // Get document contents and save
-    const contents = getDocumentText();
+    let contents = getDocumentText();
+
+    // Loop through images and save their contents at the bottom of file
+    let images = document.getElementsByTagName("IMG");
+    let json = {};
+    let index = 0;
+    for (var image of images) {
+        if (image.classList.contains("imagePluginImg")) { // Only count image plugin images
+            json[index.toString()] = {
+                "src": image.src,
+                "title": image.nextSibling.innerText
+            }
+
+            index++;
+        }
+    }
+
+    contents += "||" + JSON.stringify(json);
+
     const writable = await fileHandle.createWritable();
     await writable.write(contents);
     await writable.close();
