@@ -61,3 +61,12 @@ h2 {
 h3 {
     display:inline;
 }
+
+.theorem {
+    font-weight:bold;
+}
+
+.theorem::before {
+    content: "Theorem: ";
+    font-style:italic;
+}
