@@ -86,6 +86,72 @@ function steamrollMark(mark) {
     return command;
 }
 
+function applyCommand(state, dispatch) {
+    // Allow shortcuts for keybinds that are hard to remember
+    // ex. \bold{ for bold text instead of ctrl+b. 
+    if (state.selection.$head.marks().length == 0) {
+        let curPos = state.selection.$head.pos;
+        let currentTextNode = state.doc.nodeAt(curPos - 1);
+        if (!currentTextNode || !currentTextNode.type || (currentTextNode.type.name == "mathquill")) {
+            // Leave mathquill elements alone
+            return false;
+        }
+
+        // Find the last slash before the current position
+        let indexOfSlash = curPos;
+        while (indexOfSlash >= 0 && state.doc.textBetween(indexOfSlash, indexOfSlash + 1) !== "\\") {
+            indexOfSlash--;
+        }
+        if (indexOfSlash < 0) {
+            // Improper formatting
+            return false;
+        }
+
+        // Get the command, and then delete it from the doc
+        let command = state.doc.textBetween(indexOfSlash + 1, curPos);
+        let tr = state.tr;
+        tr = tr.delete(indexOfSlash, curPos);
+        
+
+        // Now apply the mark!
+        if (command === "textbf" || command === "bold") {
+            tr = tr.setStoredMarks([schema.marks.strong.create()]);
+        } else if (command === "textit") {
+            tr = tr.setStoredMarks([schema.marks.em.create()]);
+        } else if (command === "eqref") {
+            tr = tr.setStoredMarks([schema.marks.link.create()]);
+        } else if (command === "verb") {
+            tr = tr.setStoredMarks([schema.marks.code.create()]);
+        } else if (command === "section") {
+            tr = tr.setStoredMarks([schema.marks.section.create()]);
+        } else if (command === "subsection") {
+            tr = tr.setStoredMarks([schema.marks.subsection.create()]);
+        }
+
+        dispatch(tr);
+    } else {
+        return false;
+    }
+    return true;
+}
+
+function exitCommand(state, dispatch) {
+    // Exit out of the current mark by undoing the mark
+
+    let curPos = state.selection.from;
+    let currentTextNode = state.doc.nodeAt(curPos - 1);
+    if (!currentTextNode || !currentTextNode.type || (currentTextNode.type.name == "mathquill")) {
+        // Leave mathquill elements alone
+        return false;
+    }
+
+    // Remove all marks!
+    let tr = state.tr;
+    tr = tr.setStoredMarks([]);
+    dispatch(tr);
+    return true;
+}
+
 const toggleBold = steamrollMark(schema.marks.strong);
 const toggleItalics = steamrollMark(schema.marks.em);
 const toggleLink = steamrollMark(schema.marks.link);
@@ -106,7 +172,9 @@ editor = new EditorView(editorElement, {
                     "Mod-l":toggleLink,
                     "Mod-r":toggleCode,
                     "Shift-Mod-s":toggleSection,
-                    "Mod-s":toggleSubsection
+                    "Mod-s":toggleSubsection,
+                    "{": applyCommand,
+                    "}": exitCommand
                 }),
                 keymap(baseKeymap),
                 mathQuillInputRule, // Create mathquill element on ;
@@ -124,8 +192,8 @@ editor = new EditorView(editorElement, {
 document.addEventListener('selectionchange', () => setTimeout(() => {refreshHighlights()}, 0));
 document.addEventListener('click', (event) => {
     if (event.target.tagName === "A") {
-        // We will attempt to scroll to the first mathquill element above the label
-        $('.mq-label:contains("' + event.target.innerText + '")').get().forEach((label) => {
+        // We will attempt to scroll to the last section/mq label with this inner text
+        $('.mq-label:contains("' + event.target.innerText + '"), h2:contains("' + event.target.innerText + '"), h3:contains("' + event.target.innerText + '")').get().forEach((label) => {
             if (label.compareDocumentPosition(event.target) & 0x04) {
                 label.scrollIntoView();
             }
