@@ -86,7 +86,7 @@ function textToFrag(pastedText) {
     const subsectionregex = /(\\subsection\{((?!\\subsection\{)[^}]*)\})|/
     const citeregex = /(\\cite\{((?!\\cite\{)[^}]*)\})|/
     const imageregex = /(\\includegraphics\{((?!\\includegraphics\{)[^}]*).png\})|/
-    const theoremregex = /(\\theorem\{((?!\\theorem\{)[^}]*).png\})/
+    const theoremregex = /(\\theorem\{((?!\\theorem\{)[^}]*)\})/
     const regex = new RegExp(
         mqregex.source + 
         textbfregex.source + 
