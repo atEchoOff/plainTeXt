@@ -64,9 +64,19 @@ h3 {
 
 .theorem {
     font-weight:bold;
+    font-style:normal !important;
 }
 
 .theorem::before {
-    content: "Theorem: ";
+    content: "Theorem(";
+    font-style:normal !important;
+}
+
+.theorem::after {
+    content: "): ";
+    font-style:normal !important;
+}
+
+p:has(.theorem) {
     font-style:italic;
 }
