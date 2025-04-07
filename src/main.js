@@ -79,6 +79,10 @@ const schema = new Schema({
         qed: {
             parseDOM: [{tag: "a"}],
             toDOM() { return ["a", {class: 'qed'}] }
+        },
+        label: {
+            parseDOM: [{tag: "a"}],
+            toDOM() { return ["a", {class: 'reference label'}] } // class label just exists for reference bounce
         }
     }
 });
@@ -155,6 +159,8 @@ function applyCommand(state, dispatch) {
             tr = tr.setStoredMarks([schema.marks.theorem.create()]);
         } else if (command === "qed") {
             tr = tr.setStoredMarks([schema.marks.qed.create()]);
+        } else if (command === "label") {
+            tr = tr.setStoredMarks([schema.marks.label.create()]);
         }
 
         dispatch(tr);
@@ -226,11 +232,32 @@ document.addEventListener('selectionchange', () => setTimeout(() => {refreshHigh
 document.addEventListener('click', (event) => {
     if (event.target.classList.contains('reference')) {
         // We will attempt to scroll to the last section/mq label with this inner text
+        let foundTarget = false;
         $('.mq-label:contains("' + event.target.innerText + '"), h2:contains("' + event.target.innerText + '"), h3:contains("' + event.target.innerText + '")').get().forEach((label) => {
             if (label.compareDocumentPosition(event.target) & 0x04) {
                 label.scrollIntoView();
+                foundTarget = true;
             }
-        })
+        });
+
+        if (!foundTarget) {
+            // Maybe belongs to a figure? In which case it should be the highest below
+            $('.label:contains("' + event.target.innerText + '")').get().reverse().forEach((label) => {
+                if (label.compareDocumentPosition(event.target) & 0x02) {
+                    label.scrollIntoView();
+                    foundTarget = true;
+                }
+            });
+        }
+
+        if (!foundTarget) {
+            // Maybe belongs to a theorem?
+            $('.theorem:contains("' + event.target.innerText + '")').get().forEach((label) => {
+                if (label.compareDocumentPosition(event.target) & 0x04) {
+                    label.scrollIntoView();
+                }
+            });
+        }
     }
 })
 import_from_local("save-open.js");
