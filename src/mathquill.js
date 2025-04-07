@@ -64,6 +64,9 @@ function fragToTextFrag(fragment) {
             } else if (child.marks[0].type.name === "qed") {
                 const textNode = schema.text("\\qed{ }");
                 nodes.push(textNode);
+            } else if (child.marks[0].type.name === "label") {
+                const textNode = schema.text("\\label{" + child.text + "}");
+                nodes.push(textNode);
             }
         } else if (child.content) {
             // For non-leaf nodes, recursively transform their content
@@ -88,9 +91,10 @@ function textToFrag(pastedText) {
     const sectionregex = /(\\section\{((?!\\section\{)[^}]*)\})|/
     const subsectionregex = /(\\subsection\{((?!\\subsection\{)[^}]*)\})|/
     const citeregex = /(\\cite\{((?!\\cite\{)[^}]*)\})|/
-    const imageregex = /(\\includegraphics\{((?!\\includegraphics\{)[^}]*).png\})|/
+    const imageregex = /(\\includegraphics\{((?!\\includegraphics\{)[^}]*)\})|/
     const theoremregex = /(\\theorem\{((?!\\theorem\{)[^}]*)\})|/
-    const qedregex = /(\\qed\{((?!\\qed\{)[^}]*)\})/
+    const qedregex = /(\\qed\{((?!\\qed\{)[^}]*)\})|/
+    const labelregex = /(\\label\{((?!\\label\{)[^}]*)\})/
     const regex = new RegExp(
         mqregex.source + 
         textbfregex.source + 
@@ -102,13 +106,14 @@ function textToFrag(pastedText) {
         citeregex.source +
         imageregex.source +
         theoremregex.source +
-        qedregex.source
+        qedregex.source +
+        labelregex.source
     , "g")
     let lastIndex = 0;
     let nodes = [];
     
     // Loop through matches
-    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, offset) => {
+    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, offset) => {
         let text = pastedText.slice(lastIndex, offset);
         if (offset > lastIndex) {
             // This is text
@@ -157,14 +162,17 @@ function textToFrag(pastedText) {
 
             lastIndex = offset + match.length;
         } else if (p17) {
-            // This is an image
-            if (p17 in imageData) {
+            // This is an image, should be in format
+            // id caption
+            let id = p17.substring(0, p17.indexOf(" "));
+            let caption = p17.substring(p17.indexOf(" ") + 1);
+            if (id in imageData) {
                 // We are currently setting up, and a previous definition already exists for img
                 let imgNode = schema.nodes.image.create({
-                    src:imageData[p17]['src'],
-                    title:imageData[p17]['title'],
+                    src:imageData[id]['src'],
+                    title:decodeURIComponent(caption),
                     aria:''
-                }, schema.text(imageData[p17]['title']));
+                }, textToFrag(decodeURIComponent(caption)));
 
                 nodes.push(imgNode);
                 // The imageData is done for this, we can remove it
@@ -180,6 +188,11 @@ function textToFrag(pastedText) {
         } else if (p21) {
             // This is a theorem
             nodes.push(schema.text(" ", [schema.marks.qed.create()]));
+
+            lastIndex = offset + match.length;
+        } else if (p23) {
+            // This is a label
+            nodes.push(schema.text(p23, [schema.marks.label.create()]));
 
             lastIndex = offset + match.length;
         }
@@ -211,6 +224,13 @@ function verticalAlign(mathquillElement) {
     let root = rootBlock.getBoundingClientRect();
     let container = mathquillElement.getBoundingClientRect();
     mathquillElement.style.verticalAlign = (root.top - container.top)/2 + (root.bottom - container.bottom)/2 + 2 + "px"
+}
+
+function arrayOfTextNodesToText(textNodes) {
+    // Take an array of textnodes, combine their text
+    let textFrag = fragToTextFrag(textNodes);
+    
+    return textFrag.content[0].text;
 }
 
 const mathQuillPlugin = new Plugin({
@@ -268,9 +288,11 @@ const mathQuillPlugin = new Plugin({
                 } else if (fragment.content && fragment.content.type && fragment.content.type.name === "image") {
                     // The counter is meaningless unless copying the whole doc
                     // For now it is needed to save images between sessions
-                    lines.push("\\includegraphics{" + (imgCounter++) + ".png}");
+                    let text = arrayOfTextNodesToText(fragment.content.content.content);
+                    lines.push("\\includegraphics{" + (imgCounter++) + " " + encodeURIComponent(text) + "}");
                 } else if (fragment.type && fragment.type.name === "image") {
-                    lines.push("\\includegraphics{" + (imgCounter++) + ".png}");
+                    let text = arrayOfTextNodesToText(fragment.content.content);
+                    lines.push("\\includegraphics{" + (imgCounter++) + " " + encodeURIComponent(text) + "}");
                 } else {
                     lines.push(fragment.content[0].text);
                 }
