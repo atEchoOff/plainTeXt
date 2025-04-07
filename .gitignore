@@ -1,6 +1,7 @@
 /node_modules
 /mqeditor
 /dist
+/public
 # These can be found in node_modules/prosemirror-image-plugin/dist/styles, paste into style
 style/common.css
 style/sideResize.css

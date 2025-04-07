@@ -93,8 +93,14 @@ function latext() {
         }
     }
 
+    let docString = output.join("\n");
+
+    // Replace all \ref (referencing earlier line inside math) with \tag{by \label{inside}}
+    const refregex = /(\\ref\{((?!\\ref\{)[^}]*)\})/g
+    docString = docString.replaceAll(refregex, "\\tag{by \\eqref{$2}}");
+
     // copy to clipboard
-    navigator.clipboard.writeText(output.join("\n")).then(() => {}, () => {});
+    navigator.clipboard.writeText(docString).then(() => {}, () => {});
 }
 
 async function openFile(create) {
