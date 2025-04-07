@@ -30,6 +30,36 @@ function getDocumentText() {
     return mathQuillPlugin.props.clipboardTextSerializer(doc.slice(0));
 }
 
+function latext() {
+    // Convert document text to latex for pasting into overleaf
+    let lines = getDocumentText().split("\n");
+    let output = []; // Array of each line
+    for (var line of lines) {
+        // Conditionally handle each line
+        if (line.startsWith("\\theorem{")) {
+            // This is a theorem line. It is of the form:
+            // \theorem{Label}Theorem text
+            // We want it to be in the form:
+            // \begin{theorem}\label{label} Theorem text\end{theorem}
+            // \begin{proof}
+
+            let theoremName = line.substring(line.indexOf("{") + 1, line.indexOf("}"));
+            let theoremText = line.substring(line.indexOf("}") + 1);
+
+            output.push("\\begin{theorem} \\label{" + theoremName + "} " + theoremText + "\\end{theorem}");
+            output.push("\\begin{proof}");
+        } else if (line.startsWith("\\qed{")) {
+            // This is a \qed, we want to just replace this with \end{proof}
+            output.push("\\end{proof}");
+        } else {
+            output.push(line);
+        }
+    }
+
+    // copy to clipboard
+    navigator.clipboard.writeText(output.join("\n")).then(() => {}, () => {});
+}
+
 async function openFile(create) {
     const options = {
         startIn: 'documents',

@@ -205,7 +205,8 @@ editor = new EditorView(editorElement, {
                     "Mod-s":toggleSubsection,
                     "Mod-t":toggleCitation,
                     "{": applyCommand,
-                    "}": exitCommand
+                    "}": exitCommand,
+                    "Shift-Mod-l": latext
                 }),
                 keymap(baseKeymap),
                 imagePlugin({...imagePluginSettings}),
