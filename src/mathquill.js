@@ -67,6 +67,21 @@ function fragToTextFrag(fragment) {
             } else if (child.marks[0].type.name === "label") {
                 const textNode = schema.text("\\label{" + child.text + "}");
                 nodes.push(textNode);
+            } else if (child.marks[0].type.name === "definition") {
+                const textNode = schema.text("\\definition{" + child.text + "}");
+                nodes.push(textNode);
+            } else if (child.marks[0].type.name === "proposition") {
+                const textNode = schema.text("\\proposition{" + child.text + "}");
+                nodes.push(textNode);
+            } else if (child.marks[0].type.name === "corollary") {
+                const textNode = schema.text("\\corollary{" + child.text + "}");
+                nodes.push(textNode);
+            } else if (child.marks[0].type.name === "lemma") {
+                const textNode = schema.text("\\lemma{" + child.text + "}");
+                nodes.push(textNode);
+            } else if (child.marks[0].type.name === "remark") {
+                const textNode = schema.text("\\remark{" + child.text + "}");
+                nodes.push(textNode);
             }
         } else if (child.content) {
             // For non-leaf nodes, recursively transform their content
@@ -94,7 +109,12 @@ function textToFrag(pastedText) {
     const imageregex = /(\\includegraphics\{((?!\\includegraphics\{)[^}]*)\})|/
     const theoremregex = /(\\theorem\{((?!\\theorem\{)[^}]*)\})|/
     const qedregex = /(\\qed\{((?!\\qed\{)[^}]*)\})|/
-    const labelregex = /(\\label\{((?!\\label\{)[^}]*)\})/
+    const labelregex = /(\\label\{((?!\\label\{)[^}]*)\})|/
+    const definitionregex = /(\\definition\{((?!\\definition\{)[^}]*)\})|/
+    const propositionregex = /(\\proposition\{((?!\\proposition\{)[^}]*)\})|/
+    const corollaryregex = /(\\corollary\{((?!\\corollary\{)[^}]*)\})|/
+    const lemmaregex = /(\\lemma\{((?!\\lemma\{)[^}]*)\})|/
+    const remarkregex = /(\\remark\{((?!\\remark\{)[^}]*)\})/
     const regex = new RegExp(
         mqregex.source + 
         textbfregex.source + 
@@ -107,13 +127,18 @@ function textToFrag(pastedText) {
         imageregex.source +
         theoremregex.source +
         qedregex.source +
-        labelregex.source
+        labelregex.source +
+        definitionregex.source +
+        propositionregex.source +
+        corollaryregex.source +
+        lemmaregex.source +
+        remarkregex.source
     , "g")
     let lastIndex = 0;
     let nodes = [];
     
     // Loop through matches
-    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, offset) => {
+    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, offset) => {
         let text = pastedText.slice(lastIndex, offset);
         if (offset > lastIndex) {
             // This is text
@@ -193,6 +218,31 @@ function textToFrag(pastedText) {
         } else if (p23) {
             // This is a label
             nodes.push(schema.text(p23, [schema.marks.label.create()]));
+
+            lastIndex = offset + match.length;
+        } else if (p25) {
+            // This is a definition
+            nodes.push(schema.text(p25, [schema.marks.definition.create()]));
+
+            lastIndex = offset + match.length;
+        } else if (p27) {
+            // This is a proposition
+            nodes.push(schema.text(p27, [schema.marks.proposition.create()]));
+
+            lastIndex = offset + match.length;
+        } else if (p29) {
+            // This is a corollary
+            nodes.push(schema.text(p29, [schema.marks.corollary.create()]));
+
+            lastIndex = offset + match.length;
+        } else if (p31) {
+            // This is a lemma
+            nodes.push(schema.text(p31, [schema.marks.lemma.create()]));
+
+            lastIndex = offset + match.length;
+        } else if (p33) {
+            // This is a remark
+            nodes.push(schema.text(p33, [schema.marks.remark.create()]));
 
             lastIndex = offset + match.length;
         }
