@@ -36,20 +36,29 @@ function latext() {
     let output = []; // Array of each line
     for (var line of lines) {
         // Conditionally handle each line
-        if (line.startsWith("\\theorem{")) {
-            // This is a theorem line. It is of the form:
-            // \theorem{Label}Theorem text
+        if (line.startsWith("\\theorem{")
+         || line.startsWith("\\definition{")
+         || line.startsWith("\\proposition{")
+         || line.startsWith("\\corollary{")
+         || line.startsWith("\\lemma{")
+         || line.startsWith("\\remark{")) {
+            // This is a cmd=theorem/definition/proposition/corollary/lemma/remark line. It is of the form:
+            // \cmd{Label}Theorem text
             // We want it to be in the form:
-            // \begin{theorem}\label{label} Theorem text\end{theorem}
-            // \begin{proof}
+            // \begin{cmd}\label{cmd:label} Theorem text\end{cmd}
+            // \begin{proof} (if theorem, lemma, or corollary)
 
+            let cmd = line.substring(1, line.indexOf("{"));
             let theoremName = line.substring(line.indexOf("{") + 1, line.indexOf("}"));
             let theoremText = line.substring(line.indexOf("}") + 1);
 
-            output.push("\\begin{theorem} \\label{" + theoremName + "}");
+            output.push("\\begin{" + cmd + "}");
+            output.push("\\label{" + cmd + ":" + theoremName + "}");
             output.push(theoremText);
-            output.push("\\end{theorem}");
-            output.push("\\begin{proof}");
+            output.push("\\end{" + cmd + "}");
+            if (cmd === "theorem" || cmd === "lemma") {
+                output.push("\\begin{proof}");
+            }
         } else if (line.startsWith("\\qed{")) {
             // This is a \qed, we want to just replace this with \end{proof}
             output.push("\\end{proof}");

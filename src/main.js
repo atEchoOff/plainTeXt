@@ -83,6 +83,26 @@ const schema = new Schema({
         label: {
             parseDOM: [{tag: "a"}],
             toDOM() { return ["a", {class: 'reference label'}] } // class label just exists for reference bounce
+        },
+        definition: {
+            parseDOM: [{tag: "a"}],
+            toDOM() { return ["a", {class: 'definition theorem'}] } // theorem label exists for references
+        },
+        proposition: {
+            parseDOM: [{tag: "a"}],
+            toDOM() { return ["a", {class: 'proposition theorem'}] } // theorem label exists for references
+        },
+        corollary: {
+            parseDOM: [{tag: "a"}],
+            toDOM() { return ["a", {class: 'corollary theorem'}] } // theorem label exists for references
+        },
+        lemma: {
+            parseDOM: [{tag: "a"}],
+            toDOM() { return ["a", {class: 'lemma theorem'}] } // theorem label exists for references
+        },
+        remark: {
+            parseDOM: [{tag: "a"}],
+            toDOM() { return ["a", {class: 'remark theorem'}] } // theorem label exists for references
         }
     }
 });
@@ -136,31 +156,54 @@ function applyCommand(state, dispatch) {
 
         // Get the command, and then delete it from the doc
         let command = state.doc.textBetween(indexOfSlash + 1, curPos);
-        let tr = state.tr;
-        tr = tr.delete(indexOfSlash, curPos);
-        
+        let tr = state.tr;        
 
         // Now apply the mark!
         if (command === "textbf" || command === "bold") {
+            tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.strong.create()]);
         } else if (command === "textit") {
+            tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.em.create()]);
         } else if (command === "eqref") {
+            tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.link.create()]);
         } else if (command === "verb") {
+            tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.code.create()]);
         } else if (command === "section") {
+            tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.section.create()]);
         } else if (command === "subsection") {
+            tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.subsection.create()]);
         } else if (command === "cite") {
+            tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.citation.create()]);
         } else if (command === "theorem") {
+            tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.theorem.create()]);
         } else if (command === "qed") {
+            tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.qed.create()]);
         } else if (command === "label") {
+            tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.label.create()]);
+        } else if (command === "definition" || command === "def") {
+            tr = tr.delete(indexOfSlash, curPos);
+            tr = tr.setStoredMarks([schema.marks.definition.create()]);
+        } else if (command === "proposition" || command === "prop") {
+            tr = tr.delete(indexOfSlash, curPos);
+            tr = tr.setStoredMarks([schema.marks.proposition.create()]);
+        } else if (command === "corollary" || command === "cor") {
+            tr = tr.delete(indexOfSlash, curPos);
+            tr = tr.setStoredMarks([schema.marks.corollary.create()]);
+        } else if (command === "lemma") {
+            tr = tr.delete(indexOfSlash, curPos);
+            tr = tr.setStoredMarks([schema.marks.lemma.create()]);
+        } else if (command === "remark") {
+            tr = tr.delete(indexOfSlash, curPos);
+            tr = tr.setStoredMarks([schema.marks.remark.create()]);
         }
 
         dispatch(tr);

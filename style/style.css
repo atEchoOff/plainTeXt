@@ -72,7 +72,7 @@ h3 {
 }
 
 .theorem::before {
-    content: "Theorem(";
+    content: "Theorem (";
     font-style:normal !important;
 }
 
@@ -91,4 +91,24 @@ p:has(.theorem) {
 
 p:has(.qed) {
     text-align:center;
+}
+
+.definition::before {
+    content: "Definition (";
+}
+
+.proposition::before {
+    content: "Proposition (";
+}
+
+.corollary::before {
+    content: "Corollary (";
+}
+
+.lemma::before {
+    content: "Lemma (";
+}
+
+.remark::before {
+    content: "Remark (";
 }
