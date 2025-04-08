@@ -273,10 +273,12 @@ editor = new EditorView(editorElement, {
 // Highlight mathquill elements if needed
 document.addEventListener('selectionchange', () => setTimeout(() => {refreshHighlights()}, 0));
 document.addEventListener('click', (event) => {
-    if (event.target.classList.contains('reference')) {
-        // We will attempt to scroll to the last section/mq label with this inner text
+    if (event.target.classList.contains('reference') || event.target.classList.contains('mq-reference')) {
         let foundTarget = false;
-        $('.mq-label:contains("' + event.target.innerText + '"), h2:contains("' + event.target.innerText + '"), h3:contains("' + event.target.innerText + '")').get().forEach((label) => {
+        let searchText = event.target.innerText.replaceAll("\u200b", ""); // silly mathquill, no zero-width spaces please!
+        
+        // We will attempt to scroll to the last section/mq label with this inner text
+        $('.mq-label:contains("' + searchText + '"), h2:contains("' + searchText + '"), h3:contains("' + searchText + '")').get().forEach((label) => {
             if (label.compareDocumentPosition(event.target) & 0x04) {
                 label.scrollIntoView();
                 foundTarget = true;
@@ -285,7 +287,7 @@ document.addEventListener('click', (event) => {
 
         if (!foundTarget) {
             // Maybe belongs to a figure? In which case it should be the highest below
-            $('.label:contains("' + event.target.innerText + '")').get().reverse().forEach((label) => {
+            $('.label:contains("' + searchText + '")').get().reverse().forEach((label) => {
                 if (label.compareDocumentPosition(event.target) & 0x02) {
                     label.scrollIntoView();
                     foundTarget = true;
@@ -295,7 +297,7 @@ document.addEventListener('click', (event) => {
 
         if (!foundTarget) {
             // Maybe belongs to a theorem?
-            $('.theorem:contains("' + event.target.innerText + '")').get().forEach((label) => {
+            $('.theorem:contains("' + searchText + '")').get().forEach((label) => {
                 if (label.compareDocumentPosition(event.target) & 0x04) {
                     label.scrollIntoView();
                 }
