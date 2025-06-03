@@ -104,9 +104,9 @@ function latext() {
 
     let docString = output.join("\n");
 
-    // Replace all \ref (referencing earlier line inside math) with \tag{by \label{inside}}
-    const refregex = /(\\ref\{((?!\\ref\{)[^}]*)\})/g
-    docString = docString.replaceAll(refregex, "\\tag{by \\eqref{$2}}");
+    // Replace all \tag{content} with \tag{$content$}
+    const refregex = /\\tag\{((?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})*\})*)\}/g
+    docString = docString.replaceAll(refregex, "\\tag{$$$1$$}");
 
     // copy to clipboard
     navigator.clipboard.writeText(docString).then(() => {}, () => {});

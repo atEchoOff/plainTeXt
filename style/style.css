@@ -25,6 +25,10 @@ p:has(.mq-align) {
     padding-bottom:30px;
 }
 
+p:has(.mq-table) {
+    text-align:center;
+}
+
 p {
     transform: translateZ(0);
 }
