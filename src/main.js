@@ -107,31 +107,35 @@ const schema = new Schema({
     }
 });
 
+// OLD: No one cared about ctrl+B or ctrl+I so I got rid of it. 
 // Toggle mark, disable all other marks
-function steamrollMark(mark) {
+// function steamrollMark(mark) {
 
-    // The command to return
-    function command(state, dispatch) {
-        // Create a dispatch that adds commands to delete all other marks at selection first
-        const {from, to} = state.selection;
-        function newDispatch(transaction) {
-            for (let markName in schema.marks) {
-                if (markName !== mark.name) {
-                    transaction = transaction.removeMark(from, to, schema.marks[markName]);
-                    transaction = transaction.removeStoredMark(schema.marks[markName]);
-                }
-            }
+//     // The command to return
+//     function command(state, dispatch) {
+//         // Create a dispatch that adds commands to delete all other marks at selection first
+//         const {from, to} = state.selection;
+//         function newDispatch(transaction) {
+//             for (let markName in schema.marks) {
+//                 if (markName !== mark.name) {
+//                     transaction = transaction.removeMark(from, to, schema.marks[markName]);
+//                     transaction = transaction.removeStoredMark(schema.marks[markName]);
+//                 }
+//             }
 
-            return dispatch(transaction);
-        }
+//             return dispatch(transaction);
+//         }
 
-        // Toggle the mark :)
-        toggleMark(mark)(state, newDispatch)
-        return true; // do not do default action
-    }
+//         // Toggle the mark :)
+//         toggleMark(mark)(state, newDispatch)
 
-    return command;
-}
+//         createNewMark = true;
+//         requestAnimationFrame(decorateAndCreateIfNeeded)
+//         return true; // do not do default action
+//     }
+
+//     return command;
+// }
 
 function applyCommand(state, dispatch) {
     // Allow shortcuts for keybinds that are hard to remember
@@ -205,7 +209,7 @@ function applyCommand(state, dispatch) {
             tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.remark.create()]);
         }
-
+        createNewMark = true; // We trigger the execCommand to create an empty tag
         dispatch(tr);
     } else {
         return false;
@@ -230,13 +234,23 @@ function exitCommand(state, dispatch) {
     return true;
 }
 
-const toggleBold = steamrollMark(schema.marks.strong);
-const toggleItalics = steamrollMark(schema.marks.em);
-const toggleLink = steamrollMark(schema.marks.link);
-const toggleCode = steamrollMark(schema.marks.code);
-const toggleSection = steamrollMark(schema.marks.section);
-const toggleSubsection = steamrollMark(schema.marks.subsection);
-const toggleCitation = steamrollMark(schema.marks.citation);
+// const toggleBold = steamrollMark(schema.marks.strong);
+// const toggleItalics = steamrollMark(schema.marks.em);
+
+function noSingleZeroWidthSpaces(state, dispatch) {
+    // If we are backspacing into a zero width space for a mark, delete the mark
+    const currentElement = getDeepestElementAtSelection();
+    if (currentElement && currentElement.innerText == "\u200b") {
+        
+        let tr = state.tr;
+        let curpos = state.selection.$head.pos;
+
+        tr = tr.delete(curpos - 1, curpos);
+        tr = tr.setStoredMarks([]);
+        dispatch(tr);
+        return true;
+    }
+}
 
 editor = new EditorView(editorElement, {
     state: EditorState.create({
@@ -246,16 +260,12 @@ editor = new EditorView(editorElement, {
                 keymap({
                     "Mod-z":undo, 
                     "Mod-y":redo, 
-                    "Mod-b":toggleBold, 
-                    "Mod-i":toggleItalics,
-                    "Mod-l":toggleLink,
-                    "Mod-r":toggleCode,
-                    "Shift-Mod-s":toggleSection,
-                    "Mod-s":toggleSubsection,
-                    "Mod-t":toggleCitation,
+                    // "Mod-b":toggleBold, 
+                    // "Mod-i":toggleItalics,
                     "{": applyCommand,
                     "}": exitCommand,
-                    "Shift-Mod-l": latext
+                    "Shift-Mod-l": latext,
+                    "Backspace": noSingleZeroWidthSpaces
                 }),
                 keymap(baseKeymap),
                 imagePlugin({...imagePluginSettings}),
@@ -270,10 +280,65 @@ editor = new EditorView(editorElement, {
         }
 });
 
+function getDeepestElementAtSelection() {
+    const sel = window.getSelection();
+  
+    // Return null if theres no selection or there is a larger selection
+    if (!sel || !sel.isCollapsed) return null;
+
+    const node = sel.anchorNode;
+    
+    if (!node) return null;
+
+    if (node.tagName == "P" && node.hasChildNodes && node.childNodes.length == 1) {
+        // If the element is alone on this line, we get the paragraph instead. Return its child
+        return node.firstChild;
+    }
+
+    // We dont want text nodes
+    if (node.nodeType === Node.TEXT_NODE) {
+        return node.parentElement;
+    }
+
+    if (node.nodeType === Node.ELEMENT_NODE) {
+        return node;
+    }
+
+    return null;
+}
+
+// Save whether or not we want to create a new (empty) mark tag with execCommand
+let createNewMark = false;
+
+function decorateMark(element) {
+    if (element) {
+        // First, unselect selected elements (copy so that .remove() doesnt mess up loop)
+        const selectedElements = [...document.getElementsByClassName("selected-mark")];
+        for (let selectedElement of selectedElements) {
+            // If the mark has *just* a zero width space, it is invisible and unusable. Delete it!
+            if (element !== selectedElement && selectedElement.innerText == "\u200b") {
+                selectedElement.remove();
+            } else if (element !== selectedElement) {
+                selectedElement.classList.remove("selected-mark");
+            }
+        }
+
+        // Select selected element!
+        if (markTags.has(element.tagName)) {
+            requestAnimationFrame(() => {element.classList.add("selected-mark");})
+        }
+    }
+}
+
+// Valid tagNames for mark tags (FIXME this needs changing if a mark tag changes...)
+const markTags = new Set(["H2", "H3", "CODE", "EM", "STRONG", "A"]);
+
 // Highlight mathquill elements if needed
 document.addEventListener('selectionchange', () => setTimeout(() => {refreshHighlights()}, 0));
+
 document.addEventListener('click', (event) => {
-    if (event.target.classList.contains('reference') || event.target.classList.contains('mq-reference')) {
+    if (event.ctrlKey && event.target.classList.contains('reference') || event.target.classList.contains('mq-reference')) {
+        // Handle moving to label for reference
         let foundTarget = false;
         let searchText = event.target.innerText.replaceAll("\u200b", ""); // silly mathquill, no zero-width spaces please!
         
@@ -303,6 +368,32 @@ document.addEventListener('click', (event) => {
                 }
             });
         }
+    } else {
+        // This is just a click, handle mark decorations
+        requestAnimationFrame(() => {decorateMark(event.target);});
     }
+})
+
+function decorateAndCreateIfNeeded() {
+    // Decorate the current element, create it (FIXME uses execCommand im SORRY) if needed
+    const element = getDeepestElementAtSelection();
+    decorateMark(element);
+
+    if (createNewMark && editor.state.storedMarks && editor.state.storedMarks.length == 1) {
+        // This happens when a mark is triggered by prosemirror. However, it doesnt create a tag
+        // Since we want decorations, this force creates the tag
+        document.execCommand("insertHTML", false, "<a>\u200b</a>");
+        setTimeout(() => {
+            // Decorate new tag
+            const element = getDeepestElementAtSelection();
+            decorateMark(element);
+        }, 0)
+        createNewMark = false;
+    }
+}
+
+document.addEventListener('keydown', (event) => {
+    // Refresh mark decorations when typing
+    requestAnimationFrame(decorateAndCreateIfNeeded);
 })
 import_from_local("save-open.js");

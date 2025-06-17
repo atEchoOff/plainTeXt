@@ -315,6 +315,11 @@ const mathQuillPlugin = new Plugin({
             return false; // no changes were made
         },
 
+        handleClick(view, pos, event) {
+            // This isn't really for mathquill, but will disable the ctrl+click event
+            return event.ctrlKey;
+        },
+
         transformCopied(slice) {
             // Copy elements right from editor
             const newContent = fragToTextFrag(slice.content);
