@@ -36,6 +36,7 @@ p {
 .reference {
     color: blue;
     cursor: pointer;
+    position: relative;
 }
 
 .label {
@@ -50,6 +51,28 @@ p {
     content: ")";
 }
 
+.reference:hover:not(.selected-mark)::after {
+    content: "ctrl+click to follow";
+    position:absolute;
+    top:100%;
+    left:0;
+    font-size:x-small;
+    background-color: white;
+    color: black;
+}
+
+.reference:hover:not(.selected-mark)::before {
+    content: "";
+}
+
+.reference.selected-mark::before {
+    content: "\\eqref{";
+}
+
+.selected-mark::after {
+    content: "}" !important;
+}
+
 .citation {
     color: rgb(255, 72, 102);
 }
@@ -62,12 +85,36 @@ p {
     content: "]";
 }
 
+.citation.selected-mark::before {
+    content: "\\cite{";
+}
+
 h2 {
     display:inline;
 }
 
+h2.selected-mark::before {
+    content: "\\section{";
+}
+
 h3 {
     display:inline;
+}
+
+h3.selected-mark::before {
+    content: "\\subsection{";
+}
+
+strong.selected-mark::before {
+    content: "\\textbf{";
+}
+
+em.selected-mark::before {
+    content: "\\textit{";
+}
+
+code.selected-mark::before {
+    content: "\\verb{";
 }
 
 .theorem {
