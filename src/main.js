@@ -231,6 +231,11 @@ function exitCommand(state, dispatch) {
     let tr = state.tr;
     tr = tr.setStoredMarks([]);
     dispatch(tr);
+
+    // Also, we will undecorate the current mark
+    // To do this, create a placeholder element
+    const div = document.createElement("div");
+    decorateMark(div);
     return true;
 }
 
@@ -323,8 +328,8 @@ function decorateMark(element) {
             }
         }
 
-        // Select selected element!
-        if (markTags.has(element.tagName)) {
+        // Select selected element (only if editor.state.storedMarks is null i.e. we are in a mark)
+        if (markTags.has(element.tagName) && !!!editor.state.storedMarks) {
             requestAnimationFrame(() => {element.classList.add("selected-mark");})
         }
     }

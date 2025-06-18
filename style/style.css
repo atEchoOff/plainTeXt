@@ -71,6 +71,7 @@ p {
 
 .selected-mark::after {
     content: "}" !important;
+    color:rgb(140, 140, 140);
 }
 
 .citation {
