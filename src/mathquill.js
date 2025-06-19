@@ -597,3 +597,37 @@ function refreshHighlights() {
         }
     })
 }
+
+function scrollCursorIntoView() {
+    // If in a mathquill element, scroll if cursor moves (this is called during keydown in main.js)
+    const cursor = document.querySelector('.mq-cursor');
+
+    if (!cursor) {
+        // There is no cursor silly!
+        return;
+    }
+
+    // Place parent element completely in view
+    const cursorParent = cursor.parentElement;
+    if (!cursorParent) {
+        console.log('Cursor parent element not found');
+        return;
+    }
+
+    // Get bounding rectangle
+    const cursorParentRect = cursorParent.getBoundingClientRect();
+    
+    // Check for vertical overflow
+    const isTopOverflow = cursorParentRect.top < 0;
+    const isBottomOverflow = cursorParentRect.bottom > window.innerHeight;
+
+    if (isTopOverflow || isBottomOverflow) {
+        console.log('Scrolling to mq-cursor');
+        
+        cursorParent.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'nearest'
+        });
+    }
+}
