@@ -11,6 +11,10 @@ import {
     
 } from "prosemirror-image-plugin";
 
+// Helper to run function at next frame.
+// Thanks https://stackoverflow.com/questions/38631302/requestanimationframe-not-waiting-for-the-next-frame
+var nextFrame = function(fn) { requestAnimationFrame(function() { requestAnimationFrame(fn); }); };
+
 // Setup images
 let imagePluginSettings = {...defaultSettings};
 
@@ -300,6 +304,11 @@ function getDeepestElementAtSelection() {
         return node.firstChild;
     }
 
+    if (!window.chrome && node.tagName == "P" && node.hasChildNodes) {
+        // Fix a firefix glitch where <p> is erroneously selected as the anchor node even when selecting an existing marked tag
+        return node.lastChild;
+    }
+
     // We dont want text nodes
     if (node.nodeType === Node.TEXT_NODE) {
         return node.parentElement;
@@ -330,7 +339,7 @@ function decorateMark(element) {
 
         // Select selected element (only if editor.state.storedMarks is null i.e. we are in a mark)
         if (markTags.has(element.tagName) && !!!editor.state.storedMarks) {
-            requestAnimationFrame(() => {element.classList.add("selected-mark");})
+            nextFrame(() => {element.classList.add("selected-mark");})
         }
     }
 }
@@ -339,7 +348,7 @@ function decorateMark(element) {
 const markTags = new Set(["H2", "H3", "CODE", "EM", "STRONG", "A"]);
 
 // Highlight mathquill elements if needed
-document.addEventListener('selectionchange', () => setTimeout(() => {refreshHighlights()}, 0));
+document.addEventListener('selectionchange', () => {nextFrame(refreshHighlights)});
 
 document.addEventListener('click', (event) => {
     if (event.ctrlKey && event.target.classList.contains('reference') || event.target.classList.contains('mq-reference')) {
@@ -375,7 +384,7 @@ document.addEventListener('click', (event) => {
         }
     } else {
         // This is just a click, handle mark decorations
-        requestAnimationFrame(() => {decorateMark(event.target);});
+        nextFrame(() => {decorateMark(getDeepestElementAtSelection());});
     }
 })
 
@@ -388,17 +397,76 @@ function decorateAndCreateIfNeeded() {
         // This happens when a mark is triggered by prosemirror. However, it doesnt create a tag
         // Since we want decorations, this force creates the tag
         document.execCommand("insertHTML", false, "<a>\u200b</a>");
-        setTimeout(() => {
-            // Decorate new tag
-            const element = getDeepestElementAtSelection();
-            decorateMark(element);
-        }, 0)
+        nextFrame(() => {decorateMark(getDeepestElementAtSelection());});
         createNewMark = false;
     }
 }
 
 document.addEventListener('keydown', (event) => {
     // Refresh mark decorations when typing
-    requestAnimationFrame(decorateAndCreateIfNeeded);
+    nextFrame(decorateAndCreateIfNeeded);
 })
 import_from_local("save-open.js");
+
+// Save if pyscript is loaded
+let pyScriptLoaded = false;
+
+function loadPyScript() {
+    // Load PyScript if not already loaded
+    return new Promise((resolve, reject) => {
+        if (pyScriptLoaded) {
+            // We already have it loaded
+            resolve();
+            return;
+        }
+
+        // Add an element to tell user pyscript is loading
+        console.log("Loading PyScript...")
+        const loaderElement = document.createElement("div");
+        loaderElement.innerText = "PyScript is loading, please wait...";
+        loaderElement.classList.add("py-script-loader");
+
+        document.body.appendChild(loaderElement);
+
+        pyScriptLoaded = true; // Save loaded status so we dont load again
+
+        // Add PyScript CSS
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = "https://pyscript.net/releases/2025.5.1/core.css";
+        document.head.appendChild(link);
+
+        // Add PyScript JS
+        const script = document.createElement("script");
+        script.src = "https://pyscript.net/releases/2025.5.1/core.js";
+        script.type = "module";
+        document.head.appendChild(script);
+
+        script.onload = () => {
+            // Load cas.py code
+            const pyScript = document.createElement("py-script");
+            pyScript.textContent = `
+import_from_local("cas.py");
+`;
+            document.body.appendChild(pyScript);
+
+            // Wait for sympy function to exist and then load
+            const interval = setInterval(() => {
+                try {
+                    if (!!window["sympify"]) {
+                        console.log("PyScript loaded")
+                        clearInterval(interval);
+                        
+                        // Remove the loader element
+                        loaderElement.remove();
+                        resolve();
+                    }
+                } catch (e) {
+                    // Still initializing
+                }
+            }, 100);
+        };
+
+        script.onerror = () => reject(new Error("Failed to load PyScript"));
+    });
+}
