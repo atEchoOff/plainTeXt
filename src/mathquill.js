@@ -458,11 +458,11 @@ class MathQuillNodeView {
         this.mathField.latex(node.attrs.latex);
         if (node.attrs.initialize) {
             // Focus on creation
-            setTimeout(() => {this.mathField.focus();}, 0);
+            nextFrame(() => {this.mathField.focus()});
         }
 
         // Realign element after pasting latex
-        setTimeout(() => {verticalAlign(this.dom);}, 0);
+        nextFrame(() => {verticalAlign(this.dom);});
 
         // Event handlers
         this.dom.addEventListener('keydown', (e) => this.handleKeyDown(e));
@@ -482,6 +482,25 @@ class MathQuillNodeView {
             editor.dispatch(tr.setSelection(selection).scrollIntoView());
             editor.focus();
             return true;
+        } else if (event.key === "+" && event.ctrlKey && event.shiftKey) {
+            event.preventDefault();
+
+            // Take current latex, pass to sympy, and get result
+            const latex = this.mathField.latex();
+
+            // We must wait for pyscript to be done
+            // First, write some dots
+            this.mathField.write("\\dots");
+
+            loadPyScript().then(() => {
+                // Erase the dots
+                this.mathField.keystroke("Backspace");
+
+                const result = sympify(latex);
+
+                // Type out the result
+                this.mathField.write("=" + result);
+            })
         } else if (event.key === "Enter") {
             // Enter should do nothing inside mathquill elements
             event.preventDefault();
@@ -498,7 +517,7 @@ class MathQuillNodeView {
         
         else {
             // Vertical align when new key entered
-            setTimeout(() => {verticalAlign(this.dom);}, 0);
+            nextFrame(() => {verticalAlign(this.dom);});
         }
     }
 
