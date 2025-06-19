@@ -405,6 +405,8 @@ function decorateAndCreateIfNeeded() {
 document.addEventListener('keydown', (event) => {
     // Refresh mark decorations when typing
     nextFrame(decorateAndCreateIfNeeded);
+
+    scrollCursorIntoView();
 })
 import_from_local("save-open.js");
 
