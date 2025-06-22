@@ -30,8 +30,9 @@ function getDocumentText() {
     return mathQuillPlugin.props.clipboardTextSerializer(doc.slice(0));
 }
 
-function latext() {
+function latext(returnLaTeX) {
     // Convert document text to latex for pasting into overleaf
+    // If returnLaTeX === true, return string instead of copying
     let lines = getDocumentText().split("\n");
     let output = []; // Array of each line
     for (var line of lines) {
@@ -108,8 +109,67 @@ function latext() {
     const refregex = /\\tag\{((?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})*\})*)\}/g
     docString = docString.replaceAll(refregex, "\\tag{$$$1$$}");
 
+    // Add header and footer
+    docString = `
+\\documentclass[10pt]{report}
+\\usepackage[utf8]{inputenc}
+\\usepackage{amsmath,amsfonts,amsthm,mathbbol,bm}
+\\usepackage{booktabs, multirow}
+\\usepackage{mathtools}
+\\usepackage{graphicx}
+\\usepackage{hyperref}
+\\usepackage{soul}
+\\usepackage{xcolor,colortbl}
+\\usepackage{amssymb}
+\\usepackage{changepage,threeparttable}
+\\usepackage{mathabx,epsfig}
+\\usepackage{listings}
+\\lstset{
+    basicstyle=\\ttfamily,
+    escapechar=\\%
+}
+\\usepackage{geometry}[margin=1in]
+
+\\DeclareSymbolFontAlphabet{\\mathbb}{AMSb}
+\\DeclareSymbolFontAlphabet{\\mathbbm}{bbold}
+
+\\def\\acts{\\mathrel{\\reflectbox{$\\righttoleftarrow$}}}
+
+\\newcommand{\\ub}[2]{\\underbrace{#1}_{#2}}
+
+\\newcommand{\\vecf}[1]{\\bm{#1}}
+\\newcommand{\\vect}[1]{\\bm{\\mathsf{#1}}}
+\\newcommand{\\fnt}[1]{\\bm{\\mathsf{#1}}}
+
+\\DeclareMathOperator{\\rank}{rank}
+\\DeclareMathOperator{\\im}{im}
+\\DeclareMathOperator{\\BV}{BV}
+\\DeclareMathOperator{\\Var}{Var}
+
+\\usepackage{amsfonts,amssymb,amsthm}
+\\renewcommand{\\aligned}[1]{&#1}
+\\newcommand{\\labell}[1]{\\addtocounter{equation}{1}\\tag{\\theequation}\\label{#1}}
+\\DeclareMathOperator{\\diag}{diag}
+\\DeclareMathOperator{\\clip}{clip}
+\\newtheorem{theorem}{Theorem}[section]
+\\theoremstyle{definition}\\newtheorem{definition}{Definition}[section]
+\\newtheorem{proposition}{Proposition}[section]
+\\newtheorem{corollary}{Corollary}[section]
+\\newtheorem{lemma}{Lemma}[section]
+\\newtheorem{remark}{Remark}[section]
+\\begin{document}
+
+    ` + docString + `
+
+\\end{document}
+    `;
+
     // copy to clipboard
-    navigator.clipboard.writeText(docString).then(() => {}, () => {});
+    if (returnLaTeX === true) { // Objects are true...
+        return docString;
+    } else {
+        navigator.clipboard.writeText(docString).then(() => {}, () => {});
+    }
 }
 
 async function openFile(create) {
@@ -176,6 +236,26 @@ async function saveFile() {
 
 let button = document.getElementById("open-button");
 button.addEventListener("click", () => openFile());
+
+let overleaf = document.getElementById("overleaf");
+
+overleaf.addEventListener('click', function () {
+    // Create a form with textarea containing the latex. Then pass to overleaf!
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'https://www.overleaf.com/docs';
+    form.target = '_blank'; // Open in new tab
+    form.style.display = 'none';
+
+    const input = document.createElement('textarea');
+    input.name = 'snip';
+    input.value = latext(true); // Return latex rather than copying
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+});
 
 // Occasionally save the file if applicable
 window.setInterval(function() {
