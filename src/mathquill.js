@@ -574,6 +574,31 @@ function insertMathQuillRule() {
     });
 }
 
+function placeMathQuillNodeAtSelection() {
+    // Very similar to above, but for button use instead
+    // Define the new node
+    // initialize = true to focus on creation
+    const mathquillNode = schema.nodes.mathquill.create({initialize: true});
+
+    // Get selection
+    const pos = editor.state.selection.$anchor.pos;
+
+    // Commit to prosemirror
+    const transaction = editor.state.tr.replaceRangeWith(pos, pos, mathquillNode);
+    editor.dispatch(transaction);
+}
+
+function exitCurrentMathQuillNode() {
+    // Another version of exiting mathquill node for use from toggle button
+
+    // Select after the node
+    const pos = editor.state.selection.$anchor.pos;
+    let tr = editor.state.tr;
+    let selection = TextSelection.create(tr.doc, pos);
+    editor.dispatch(tr.setSelection(selection).scrollIntoView());
+    editor.focus();
+}
+
 // Convert to plugin for prosemirror
 const mathQuillInputRule = inputRules({
     rules: [insertMathQuillRule()],
@@ -631,3 +656,16 @@ function scrollCursorIntoView() {
         });
     }
 }
+
+let mathButton = document.getElementById("create-math-button");
+
+mathButton.addEventListener('mousedown', (event) => {
+    event.preventDefault(); // Dont lose focus on editor
+    if (document.activeElement.tagName == "TEXTAREA") {
+        // We are in a mathquill element, get out
+        exitCurrentMathQuillNode();
+    } else {
+        // Create a new mathquill element and focus!
+        placeMathQuillNodeAtSelection();
+    }
+});

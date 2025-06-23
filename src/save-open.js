@@ -232,14 +232,11 @@ async function saveFile() {
     const writable = await fileHandle.createWritable();
     await writable.write(contents);
     await writable.close();
+
+    console.log("Saved!");
 }
 
-let button = document.getElementById("open-button");
-button.addEventListener("click", () => openFile());
-
-let overleaf = document.getElementById("overleaf");
-
-overleaf.addEventListener('click', function () {
+function toOverleaf() {
     // Create a form with textarea containing the latex. Then pass to overleaf!
     const form = document.createElement('form');
     form.method = 'POST';
@@ -255,12 +252,27 @@ overleaf.addEventListener('click', function () {
     document.body.appendChild(form);
     form.submit();
     document.body.removeChild(form);
-});
+}
+
+let button = document.getElementById("open-button");
+button.addEventListener("click", () => openFile());
+
+let overleaf = document.getElementById("overleaf");
+
+overleaf.addEventListener('click', toOverleaf);
+
+let copyButton = document.getElementById("copy-latex");
+
+// Copy latex when clicking this button
+copyButton.addEventListener('click', latext);
+
+let saveButton = document.getElementById("save-button");
+
+saveButton.addEventListener('click', saveFile);
 
 // Occasionally save the file if applicable
 window.setInterval(function() {
     if (fileHandle) {
         saveFile();
-        console.log("Saved!");
     }
 }, 15000);

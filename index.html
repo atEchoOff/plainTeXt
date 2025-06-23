@@ -2,13 +2,13 @@
 <html>
 <head>
     <title>Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://prosemirror.net/css/editor.css">
     <script>
         // This will contain a JSON from index to image data at document load
         var imageData = {};
     </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="mqeditor/build/mathquill.css">
     <link rel="stylesheet" href="style/style.css">
     <link rel="stylesheet" href="style/common.css">
@@ -17,8 +17,11 @@
     <link rel="stylesheet" href="style/sideResize.css">
 <body>
     <div id="button-container">
-        <button id="open-button">Open Local File</button>
+        <button title="Semicolon (;)" id="create-math-button">Toggle Math</button>
+        <button title="Ctrl+O" id="open-button">Open Local File</button>
+        <button title="Ctrl+S" id="save-button">Save Local File</button>
         <button id="overleaf">Open in Overleaf</button>
+        <button title="Ctrl+Shift+L" id="copy-latex">Copy LaTeX Document</button>
     </div>
     <div id="editor" spellcheck="false"></div>
     <script src="mqeditor/build/mathquill.js"></script>
