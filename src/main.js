@@ -273,7 +273,6 @@ editor = new EditorView(editorElement, {
                     // "Mod-i":toggleItalics,
                     "{": applyCommand,
                     "}": exitCommand,
-                    "Shift-Mod-l": latext,
                     "Backspace": noSingleZeroWidthSpaces
                 }),
                 keymap(baseKeymap),
@@ -405,6 +404,23 @@ function decorateAndCreateIfNeeded() {
 document.addEventListener('keydown', (event) => {
     // Refresh mark decorations when typing
     nextFrame(decorateAndCreateIfNeeded);
+
+    // Handle keybinds
+    if (event.ctrlKey && event.key.toLowerCase() == "s") {
+        event.preventDefault();
+        saveFile();
+    } else if (event.ctrlKey && event.shiftKey && event.key == "O") {
+        event.preventDefault();
+        toOverleaf();
+        alert("To view figures in Overleaf, download figures first and transfer to Overleaf.");
+    } else if (event.ctrlKey && event.key.toLowerCase() == "o") {
+        event.preventDefault();
+        openFile();
+    } else if (event.ctrlKey && event.shiftKey && event.key == "L") {
+        event.preventDefault();
+        latext(); // Will copy result to clipboard
+        alert("LaTeX copied to clipboard!");
+    }
 
     scrollCursorIntoView();
 })
