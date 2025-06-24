@@ -111,39 +111,45 @@ const schema = new Schema({
     }
 });
 
-// OLD: No one cared about ctrl+B or ctrl+I so I got rid of it. 
 // Toggle mark, disable all other marks
-// function steamrollMark(mark) {
+function steamrollMark(mark) {
+    // The command to return
+    function command(state, dispatch) {
+        // Create a dispatch that adds commands to delete all other marks at selection first
+        const {from, to} = state.selection;
+        function newDispatch(transaction) {
+            for (let markName in schema.marks) {
+                if (markName !== mark.name) {
+                    transaction = transaction.removeMark(from, to, schema.marks[markName]);
+                    transaction = transaction.removeStoredMark(schema.marks[markName]);
+                }
+            }
 
-//     // The command to return
-//     function command(state, dispatch) {
-//         // Create a dispatch that adds commands to delete all other marks at selection first
-//         const {from, to} = state.selection;
-//         function newDispatch(transaction) {
-//             for (let markName in schema.marks) {
-//                 if (markName !== mark.name) {
-//                     transaction = transaction.removeMark(from, to, schema.marks[markName]);
-//                     transaction = transaction.removeStoredMark(schema.marks[markName]);
-//                 }
-//             }
+            return dispatch(transaction);
+        }
 
-//             return dispatch(transaction);
-//         }
+        // Toggle the mark :)
+        toggleMark(mark)(state, newDispatch)
 
-//         // Toggle the mark :)
-//         toggleMark(mark)(state, newDispatch)
+        if (state.selection.$head.marks().length == 0 || (state.selection.$head.marks().length > 0 && state.selection.$head.marks()[0].type.name != mark.name)) {
+            // We were not in a mark, so it needs to be decorated. Or, we need to redecorate because an old mark is replaced
+            createNewMark = true;
+            nextFrame(() => {decorateMark(getDeepestElementAtSelection());});
+        } else {
+            // We were in a mark, so all marks should be undecorated. 
+            const div = document.createElement("div");
+            decorateMark(div);
+        }
+        return true; // do not do default action
+    }
 
-//         createNewMark = true;
-//         requestAnimationFrame(decorateAndCreateIfNeeded)
-//         return true; // do not do default action
-//     }
-
-//     return command;
-// }
+    return command;
+}
 
 function applyCommand(state, dispatch) {
     // Allow shortcuts for keybinds that are hard to remember
     // ex. \bold{ for bold text instead of ctrl+b. 
+    // Only apply command if not inside a mark
     if (state.selection.$head.marks().length == 0) {
         let curPos = state.selection.$head.pos;
         let currentTextNode = state.doc.nodeAt(curPos - 1);
@@ -243,8 +249,8 @@ function exitCommand(state, dispatch) {
     return true;
 }
 
-// const toggleBold = steamrollMark(schema.marks.strong);
-// const toggleItalics = steamrollMark(schema.marks.em);
+const toggleBold = steamrollMark(schema.marks.strong);
+const toggleItalics = steamrollMark(schema.marks.em);
 
 function noSingleZeroWidthSpaces(state, dispatch) {
     // If we are backspacing into a zero width space for a mark, delete the mark
@@ -269,8 +275,8 @@ editor = new EditorView(editorElement, {
                 keymap({
                     "Mod-z":undo, 
                     "Mod-y":redo, 
-                    // "Mod-b":toggleBold, 
-                    // "Mod-i":toggleItalics,
+                    "Mod-b":toggleBold, 
+                    "Mod-i":toggleItalics,
                     "{": applyCommand,
                     "}": exitCommand,
                     "Backspace": noSingleZeroWidthSpaces
@@ -291,8 +297,8 @@ editor = new EditorView(editorElement, {
 function getDeepestElementAtSelection() {
     const sel = window.getSelection();
   
-    // Return null if theres no selection or there is a larger selection
-    if (!sel || !sel.isCollapsed) return null;
+    // Return null if theres no selection
+    if (!sel) return null;
 
     const node = sel.anchorNode;
     
