@@ -7,3 +7,5 @@ style/common.css
 style/sideResize.css
 style/withoutResize.css
 style/withResize.css
+style/mathquill.css
+style/fonts/*

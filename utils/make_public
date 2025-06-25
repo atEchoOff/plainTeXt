@@ -6,7 +6,7 @@ mkdir -p public/mqeditor/build
 mkdir -p public/style
 
 # Move folders and file to the corresponding destinations
-cp -r dist public/
+cp dist/*.js public/dist/
 cp -r mqeditor/build public/mqeditor/
 cp -r style public/
 cp -r index.html public/
