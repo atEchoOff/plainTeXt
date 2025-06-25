@@ -1,9 +1,36 @@
 {
   "name": "mathscript",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "electron.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.atech.mathscript",
+    "productName": "MathScript",
+    "files": [
+      "dist/*.js",
+      "style/*",
+      "style/fonts/*",
+      "electron.js",
+      "index.html",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "assets/icon.png"
+    }
   },
   "repository": {
     "type": "git",
@@ -20,7 +47,9 @@
     "@babel/cli": "^7.27.0",
     "@babel/core": "^7.26.10",
     "@babel/preset-env": "^7.26.9",
-    "browserify": "^17.0.1"
+    "browserify": "^17.0.1",
+    "electron": "^37.0.0",
+    "electron-builder": "^26.0.12"
   },
   "dependencies": {
     "prosemirror-commands": "^1.7.0",

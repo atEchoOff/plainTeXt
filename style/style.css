@@ -26,9 +26,9 @@
 
 @font-face {
     font-family: 'Symbola';
-    src: url('../mqeditor/build/fonts/Symbola.woff2') format('woff2'),
-         url('../mqeditor/build/fonts/Symbola.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
-         url('../mqeditor/build/fonts/Symbola.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+    src: url('fonts/Symbola.woff2') format('woff2'),
+         url('fonts/Symbola.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+         url('fonts/Symbola.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
 }  
 
 html, body {
