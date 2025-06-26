@@ -503,13 +503,22 @@ class MathQuillNodeView {
                 // Erase the dots
                 this.mathField.keystroke("Backspace");
 
-                const result = sympify(latex);
+                try {
+                    const result = sympify(latex);
 
-                // Type out the result
-                this.mathField.write("=" + result);
+                    // Type out the result
+                    this.mathField.write("=" + result);
 
-                // Make field green for 3 seconds
-                this.dom.style.backgroundColor = "rgb(189, 255, 192)";
+                    // Make field green
+                    this.dom.style.backgroundColor = "rgb(189, 255, 192)";
+                } catch (error) {
+                    // Something bad happened. Make field red. 
+                    this.dom.style.backgroundColor = "rgb(255, 189, 189)";
+
+                    console.error(error);
+                }
+
+                // Restore color after 3 seconds
                 setTimeout(() => {this.dom.style.backgroundColor = ""}, 3000);
             })
         } else if (event.key === "Enter") {
