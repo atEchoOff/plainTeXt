@@ -506,8 +506,13 @@ class MathQuillNodeView {
                 try {
                     const result = sympify(latex);
 
-                    // Type out the result
-                    this.mathField.write("=" + result);
+                    if (latex.includes("\\gets")) {
+                        // This is an assignment. Just write a check at the end
+                        this.mathField.write("\\checkmark");
+                    } else {
+                        // Type out the result
+                        this.mathField.write("=" + result);
+                    }
 
                     // Make field green
                     this.dom.style.backgroundColor = "rgb(189, 255, 192)";
@@ -689,3 +694,11 @@ mathButton.addEventListener('mousedown', (event) => {
         placeMathQuillNodeAtSelection();
     }
 });
+
+let clearSympyButton = document.getElementById("clear-sympy");
+
+clearSympyButton.addEventListener('mousedown', (event) => {
+    loadPyScript().then(() => {
+        clear_sympy();
+    });
+})

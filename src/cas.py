@@ -6,6 +6,11 @@ import js
 
 variables = dict() # Store variables set in current context
 
+def clear_sympy():
+    global variables
+    # Empty all sympy variables
+    variables = dict()
+
 def from_variable_format(st):
     # Replace variable format to parsable variables in sympy
     for variable in variables:
@@ -20,10 +25,10 @@ def sympify(latex_string):
     latex_string = from_variable_format(latex_string)
     
     variable = ""
-    if ":=" in latex_string:
+    if "\\\\gets" in latex_string:
         # We are setting a variable value
         # Cut off the assignment, and we will assign after.
-        variable, latex_string = latex_string.split(":=")
+        variable, latex_string = latex_string.split("\\\\gets")
 
     sympy_form = str(latex2sympy(latex_string))
     val = simplify(parse_expr(sympy_form, evaluate=True).doit())
@@ -37,3 +42,4 @@ def sympify(latex_string):
     return str_latex
 
 js.sympify = sympify
+js.clear_sympy = clear_sympy
