@@ -225,6 +225,15 @@ button:hover {
     border-color: #9ca3af;
 }
 
+button:disabled,
+button[disabled] {
+    color: #9ca3af;
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+
 #button-container {
     /* Prevents the toolbar from shrinking */
     flex-shrink: 0;

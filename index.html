@@ -9,6 +9,7 @@
         var imageData = {};
     </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="style/mathquill.css">
     <link rel="stylesheet" href="style/style.css">
     <link rel="stylesheet" href="style/common.css">
@@ -17,7 +18,8 @@
     <link rel="stylesheet" href="style/sideResize.css">
 <body>
     <div id="button-container">
-        <button title="Semicolon (;)" id="create-math-button">Toggle Math</button>
+        <button title="Semicolon (;)" id="create-math-button">Create Math</button>
+        <button title="Ctrl+P" id="screenshot-math" disabled="true">Screenshot Math</button>
         <button title="Ctrl+N" id="new-button">New File</button>
         <button title="Ctrl+O" id="open-button">Open Local File</button>
         <button title="Ctrl+S" id="save-button">Save Local File</button>
