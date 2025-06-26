@@ -486,7 +486,14 @@ class MathQuillNodeView {
             event.preventDefault();
 
             // Take current latex, pass to sympy, and get result
-            const latex = this.mathField.latex();
+            let latex = this.mathField.latex();
+
+            // Move to right end. If it ends with =, we dont want it, so remove
+            this.mathField.moveToRightEnd();
+            if (latex.endsWith("=")) {
+                this.mathField.keystroke("Backspace");
+                latex = latex.substring(0, latex.length - 1);
+            }
 
             // We must wait for pyscript to be done
             // First, write some dots
@@ -500,6 +507,10 @@ class MathQuillNodeView {
 
                 // Type out the result
                 this.mathField.write("=" + result);
+
+                // Make field green for 3 seconds
+                this.dom.style.backgroundColor = "rgb(189, 255, 192)";
+                setTimeout(() => {this.dom.style.backgroundColor = ""}, 3000);
             })
         } else if (event.key === "Enter") {
             // Enter should do nothing inside mathquill elements
