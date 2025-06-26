@@ -270,6 +270,13 @@ let saveButton = document.getElementById("save-button");
 
 saveButton.addEventListener('click', saveFile);
 
+let newButton = document.getElementById("new-button");
+
+newButton.addEventListener('click', () => {
+    // Open a new tab/window
+    window.open(window.location.href, '_blank').focus();
+})
+
 // Occasionally save the file if applicable
 window.setInterval(function() {
     if (fileHandle) {
