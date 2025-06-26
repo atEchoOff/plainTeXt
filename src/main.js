@@ -349,11 +349,29 @@ function decorateMark(element) {
     }
 }
 
+function handleButtonChanges() {
+    // Activate or deactivate buttons
+    if (document.activeElement && document.activeElement.tagName == "TEXTAREA") {
+        // We are in a mathquill element, so activate screenshot button and set toggle text to exit
+        screenshotMathButton.disabled = false;
+        mathButton.textContent = "Exit Math";
+    } else {
+        // We are out of mathquill element
+        screenshotMathButton.disabled = true;
+        mathButton.textContent = "Create Math";
+    }
+}
+
 // Valid tagNames for mark tags (FIXME this needs changing if a mark tag changes...)
 const markTags = new Set(["H2", "H3", "CODE", "EM", "STRONG", "A"]);
 
-// Highlight mathquill elements if needed
-document.addEventListener('selectionchange', () => {nextFrame(refreshHighlights)});
+document.addEventListener('selectionchange', () => {
+    // Highlight mathquill elements if needed
+    nextFrame(refreshHighlights); 
+    
+    // Handle any button changes based on mathquill focus
+    nextFrame(handleButtonChanges);
+});
 
 document.addEventListener('click', (event) => {
     if (event.ctrlKey && event.target.classList.contains('reference') || event.target.classList.contains('mq-reference')) {

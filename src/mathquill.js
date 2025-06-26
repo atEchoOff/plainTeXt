@@ -538,6 +538,10 @@ class MathQuillNodeView {
         } else if (event.key === "&") {
             event.preventDefault();
             this.mathField.cmd("\\aligned");
+        } else if (event.ctrlKey && event.key == "p") {
+            // Download mathquill screenshot
+            event.preventDefault();
+            downloadMathQuillScreenShot(this.dom);
         }
         
         else {
@@ -682,6 +686,63 @@ function scrollCursorIntoView() {
     }
 }
 
+function downloadMathQuillScreenShot(mathQuillElement) {
+    // Download a screenshot of the mathquill canvas given mathquill element
+
+    // Get the bounding box of the MathQuill element
+    const rect = mathQuillElement.getBoundingClientRect();
+    const width = Math.ceil(rect.width);
+    const height = Math.ceil(rect.height);
+
+    // Create a canvas
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+
+    // Set background to transparent
+    ctx.clearRect(0, 0, width, height);
+
+    // Remove cursor from image
+    let cursor_element = document.querySelector(".mq-cursor");
+    cursor_element.classList.add("mq-blink");
+    
+    // Unfocus so we dont get borders around element and in align/matrices
+    mathQuillElement.classList.remove("mq-focused");
+
+    // Convert the MathQuill element into an image
+    html2canvas(mathQuillElement, {
+        backgroundColor: null, // Transparent background
+        scale: 2, // Higher resolution
+        useCORS: true
+    }).then(canvas => {
+        // Convert to PNG and trigger download
+        canvas.toBlob(function (blob) {
+            // Write blob to clipboard
+            navigator.clipboard.write([
+                new ClipboardItem({
+                    'image/png': blob
+                })
+            ]);
+
+            // Create URL for downloading
+            const pngUrl = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = pngUrl;
+            a.download = "mathquill.png";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(pngUrl);
+
+            // Refocus!
+            mathQuillElement.classList.add("mq-focused");
+        }, "image/png");
+    }).catch(error => {
+        console.error("Error capturing MathQuill element:", error);
+    });
+}
+
 let mathButton = document.getElementById("create-math-button");
 
 mathButton.addEventListener('mousedown', (event) => {
@@ -701,4 +762,20 @@ clearSympyButton.addEventListener('mousedown', (event) => {
     loadPyScript().then(() => {
         clear_sympy();
     });
+})
+
+let screenshotMathButton = document.getElementById("screenshot-math");
+
+screenshotMathButton.addEventListener('mousedown', (event) => {
+    event.preventDefault(); // Do not lose focus from mathquill element
+
+    try {
+        // First, get mathquill element
+        const mathquillElement = document.activeElement.parentElement.parentElement;
+
+        if (mathquillElement && mathquillElement.tagName == "SPAN") {
+            // We assume this is a mathquill element
+            downloadMathQuillScreenShot(mathquillElement);
+        }
+    } catch(_) {}
 })
