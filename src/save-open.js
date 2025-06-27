@@ -107,7 +107,8 @@ function latext(returnLaTeX) {
 
     // Replace all \tag{content} with \tag{$content$}
     const refregex = /\\tag\{((?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})*\})*)\}/g
-    docString = docString.replaceAll(refregex, "\\tag{$$$1$$}");
+    docString = docString.replaceAll(refregex, "\\tag{$$$1$$}")
+                         .replaceAll("\u200b", "");
 
     // Add header and footer
     docString = `
