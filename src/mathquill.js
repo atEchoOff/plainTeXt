@@ -778,4 +778,39 @@ screenshotMathButton.addEventListener('mousedown', (event) => {
             downloadMathQuillScreenShot(mathquillElement);
         }
     } catch(_) {}
+});
+
+let alignButton = document.getElementById("create-align");
+
+alignButton.addEventListener("mousedown", (event) => {
+    event.preventDefault(); // Do not lose focus from mathquill element
+    let deepestElement = getDeepestElementAtSelection();
+
+    // This procedure places the selection in an empty line between text to the left and right, if exists
+    if (deepestElement.tagName != "BR") {
+        // We have stuff on this line. Press enter, and move back up
+        simulateKeyPress("Enter");
+        cursorOffset(-2);
+        deepestElement = getDeepestElementAtSelection();
+    }
+
+    if (deepestElement.tagName != "BR") {
+        // There was stuff before the cursor. Go back to next line
+        cursorOffset(2);
+        deepestElement = getDeepestElementAtSelection();
+    }
+
+    if (deepestElement.tagName != "BR") {
+        // When we clicked enter, some stuff moved with us. Click enter and then up to get a free line
+        simulateKeyPress("Enter");
+        cursorOffset(-2);
+    }
+
+    // Now, create an element, get the controller, and execute align
+    placeMathQuillNodeAtSelection();
+
+    nextFrame(() => {
+        const mathField = MQ(document.activeElement.parentElement.parentElement);
+        mathField.cmd("\\align");
+    })
 })
