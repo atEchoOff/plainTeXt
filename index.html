@@ -18,14 +18,56 @@
     <link rel="stylesheet" href="style/sideResize.css">
 <body>
     <div id="button-container">
-        <button title="Semicolon (;)" id="create-math-button">Create Math</button>
-        <button title="Ctrl+P" id="screenshot-math" disabled="true">Screenshot Math</button>
-        <button title="Ctrl+N" id="new-button">New File</button>
-        <button title="Ctrl+O" id="open-button">Open Local File</button>
-        <button title="Ctrl+S" id="save-button">Save Local File</button>
-        <button id="overleaf">Open in Overleaf</button>
-        <button title="Ctrl+Shift+L" id="copy-latex">Copy LaTeX Document</button>
-        <button id="clear-sympy">Clear SymPy Variables</button>
+        <div class="dropdown">
+            <button class="tab-button">File</button>
+            <div class="dropdown-content">
+                <button title="Ctrl+N" id="new-button">New File</button>
+                <button title="Ctrl+O" id="open-button">Open Local File</button>
+                <button title="Ctrl+S" id="save-button">Save Local File</button>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="tab-button">Math</button>
+            <div class="dropdown-content">
+                <button title="Semicolon (;)" id="create-math-button">Create Math</button>
+                <button title="Ctrl+P" id="screenshot-math" disabled="true">Screenshot Math</button>
+                <button title="Semicolon -> \align (;\align)" id="create-align">Create Align</button>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="tab-button">LaTeX</button>
+            <div class="dropdown-content">
+                <button id="overleaf">Open in Overleaf</button>
+                <button title="Ctrl+Shift+L" id="copy-latex">Copy LaTeX Document</button>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="tab-button">SymPy</button>
+            <div class="dropdown-content">
+                <button id="load-pyscript">Start SymPy</button>
+                <button id="clear-sympy" disabled="true">Clear SymPy Variables</button>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="tab-button">Command</button>
+            <div class="dropdown-content">
+                <button class="command-button" title="ctrl+B">\textbf</button>
+                <button class="command-button" title="ctrl+I">\textit</button>
+                <button class="command-button">\texttt</button>
+                <button class="command-button">\section</button>
+                <button class="command-button">\subsection</button>
+                <button class="command-button">\label</button>
+                <button class="command-button">\eqref</button>
+                <button class="command-button">\cite</button>
+                <button class="command-button">\theorem</button>
+                <button class="command-button">\lemma</button>
+                <button class="command-button">\remark</button>
+                <button class="command-button">\corollary</button>
+                <button class="command-button">\proposition</button>
+                <button class="command-button">\definition</button>
+                <button class="command-button">\qed</button>
+            </div>
+        </div>
     </div>
     <div id="editor" spellcheck="false"></div>
     <script src="dist/mathquill.js"></script>

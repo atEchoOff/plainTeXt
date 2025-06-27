@@ -208,21 +208,26 @@ p:has(.qed) {
 }
 
 button {
-    display: inline-block; /* Allows buttons to sit side-by-side */
-    margin: 0 4px;
+    display: block;
+    margin: 0;
+    width: 100%;
     padding: 8px 16px;
     font-size: 14px; /* Prevent button text overflow */
     color: #374151;
-    background-color: #f9fafb;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
+    background-color: transparent;
+    border: none;
     cursor: pointer;
     transition: background-color 0.2s ease, border-color 0.2s ease;
+    text-align: left;
 }
 
 button:hover {
     background-color: #f3f4f6;
     border-color: #9ca3af;
+}
+
+.dropdown-content button:hover {
+    border: none; /* Ensure no border appears on hover */
 }
 
 button:disabled,
@@ -233,6 +238,54 @@ button[disabled] {
     pointer-events: none;
 }
 
+/* The main tab buttons ("File", "Math", etc.) */
+.tab-button {
+    display: inline-block; /* Overrides the 100% width from the general button style */
+    width: auto;
+    text-align: center;
+    background-color: #f9fafb;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+}
+
+/* This is the container for each tab, like "File" and its buttons */
+.dropdown {
+    display: inline-block; /* Allows tabs to sit side-by-side */
+    position: relative; /* Positioning the dropdown */
+    margin: 0 4px;
+}
+
+/* The content that appears on hover (the list of buttons) */
+.dropdown-content {
+    display: block;
+    position: absolute;
+    z-index: 9998; /* below pyscript loading screen */
+    min-width: 180px;
+    padding: 8px;
+    margin-top: 8px;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    
+    /* Animation: Initially hidden and slightly shifted up */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+/* Show the dropdown content when hovering over the dropdown container */
+.dropdown:hover .dropdown-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Add a margin to all but the last button in a dropdown */
+.dropdown-content button:not(:last-child) {
+    margin-bottom: 4px;
+}
 
 #button-container {
     /* Prevents the toolbar from shrinking */
@@ -243,20 +296,13 @@ button[disabled] {
     border-bottom: 1px solid #d1d5db;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
+    white-space: normal;
     
     /* Ensures padding doesn't add to the total width */
     box-sizing: border-box;
 
     /* Smooth scrolling effect on touch devices */
     -webkit-overflow-scrolling: touch; 
-}
-
-/* Hides the scrollbar but keeps it scrollable */
-#button-container::-webkit-scrollbar {
-    display: none;
 }
 
 @media (max-width: 600px) {

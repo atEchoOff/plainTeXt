@@ -182,7 +182,7 @@ function applyCommand(state, dispatch) {
         } else if (command === "eqref") {
             tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.link.create()]);
-        } else if (command === "verb") {
+        } else if (command === "verb" || command === "texttt") {
             tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.code.create()]);
         } else if (command === "section") {
@@ -294,6 +294,31 @@ editor = new EditorView(editorElement, {
         }
 });
 
+function simulateKeyPress(key) {
+    let event = document.createEvent("Event");
+    event.initEvent("keydown", true, true);
+    event.key = event.code = key;
+    return editor.someProp("handleKeyDown", f => f(editor, event));
+}
+
+function typeText(text) {
+    // Get selection
+    const pos = editor.state.selection.$anchor.pos;
+
+    // Commit to prosemirror
+    const transaction = editor.state.tr.insertText(text, pos);
+    editor.dispatch(transaction);
+}
+
+function cursorOffset(offset) {
+    // Move left or right by offset
+    const pos = editor.state.selection.$anchor.pos + offset;
+    let tr = editor.state.tr;
+    let selection = TextSelection.create(tr.doc, pos);
+    editor.dispatch(tr.setSelection(selection).scrollIntoView());
+    editor.focus();
+}
+
 function getDeepestElementAtSelection() {
     const sel = window.getSelection();
   
@@ -355,10 +380,12 @@ function handleButtonChanges() {
         // We are in a mathquill element, so activate screenshot button and set toggle text to exit
         screenshotMathButton.disabled = false;
         mathButton.textContent = "Exit Math";
+        alignButton.disabled = true;
     } else {
         // We are out of mathquill element
         screenshotMathButton.disabled = true;
         mathButton.textContent = "Create Math";
+        alignButton.disabled = false;
     }
 }
 
@@ -498,6 +525,8 @@ import_from_local("cas.py");
                     if (!!window["sympify"]) {
                         console.log("PyScript loaded")
                         clearInterval(interval);
+
+                        clearSympyButton.disabled = false; // Enable sympy button
                         
                         // Remove the loader element
                         loaderElement.remove();
@@ -511,4 +540,25 @@ import_from_local("cas.py");
 
         script.onerror = () => reject(new Error("Failed to load PyScript"));
     });
+}
+
+const loadPyScriptButton = document.getElementById("load-pyscript");
+
+loadPyScriptButton.addEventListener('click', loadPyScript);
+
+// Make command buttons functional
+let commandButtons = document.getElementsByClassName("command-button");
+
+for (let commandButton of commandButtons) {
+    const command = commandButton.textContent;
+    commandButton.addEventListener("mousedown", (event) => {
+        event.preventDefault(); // Do not change selection
+
+        // Type command, then apply command and decorate!
+        typeText(command);
+        nextFrame(() => {
+            applyCommand(editor.state, editor.dispatch);
+            decorateAndCreateIfNeeded();
+        })
+    })
 }
