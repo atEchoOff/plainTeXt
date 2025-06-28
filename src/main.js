@@ -405,31 +405,46 @@ document.addEventListener('click', (event) => {
         // Handle moving to label for reference
         let foundTarget = false;
         let searchText = event.target.innerText.replaceAll("\u200b", ""); // silly mathquill, no zero-width spaces please!
+
+        // Only search for stuff after semicolon
+        searchText = searchText.substring(searchText.indexOf(":") + 1);
         
-        // We will attempt to scroll to the last section/mq label with this inner text
+        // We will attempt to scroll to a section/mq label with this inner text
         $('.mq-label:contains("' + searchText + '"), h2:contains("' + searchText + '"), h3:contains("' + searchText + '")').get().forEach((label) => {
-            if (label.compareDocumentPosition(event.target) & 0x04) {
-                label.scrollIntoView();
-                foundTarget = true;
-            }
+            // if (label.compareDocumentPosition(event.target) & 0x04) {
+            label.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'nearest'
+            });
+            foundTarget = true;
+            // }
         });
 
         if (!foundTarget) {
-            // Maybe belongs to a figure? In which case it should be the highest below
-            $('.label:contains("' + searchText + '")').get().reverse().forEach((label) => {
-                if (label.compareDocumentPosition(event.target) & 0x02) {
-                    label.scrollIntoView();
-                    foundTarget = true;
-                }
+            // Maybe belongs to a figure?
+            $('.label:contains("' + searchText + '")').get().forEach((label) => {
+                // if (label.compareDocumentPosition(event.target) & 0x02) {
+                label.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest',
+                    inline: 'nearest'
+                });
+                foundTarget = true;
+                // }
             });
         }
 
         if (!foundTarget) {
             // Maybe belongs to a theorem?
             $('.theorem:contains("' + searchText + '")').get().forEach((label) => {
-                if (label.compareDocumentPosition(event.target) & 0x04) {
-                    label.scrollIntoView();
-                }
+                // if (label.compareDocumentPosition(event.target) & 0x04) {
+                label.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest',
+                    inline: 'nearest'
+                });
+                // }
             });
         }
     } else {
