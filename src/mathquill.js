@@ -485,47 +485,7 @@ class MathQuillNodeView {
         } else if (event.key === "+" && event.ctrlKey && event.shiftKey) {
             event.preventDefault();
 
-            // Take current latex, pass to sympy, and get result
-            let latex = this.mathField.latex();
-
-            // Move to right end. If it ends with =, we dont want it, so remove
-            this.mathField.moveToRightEnd();
-            if (latex.endsWith("=")) {
-                this.mathField.keystroke("Backspace");
-                latex = latex.substring(0, latex.length - 1);
-            }
-
-            // We must wait for pyscript to be done
-            // First, write some dots
-            this.mathField.write("\\dots");
-
-            loadPyScript().then(() => {
-                // Erase the dots
-                this.mathField.keystroke("Backspace");
-
-                try {
-                    const result = sympify(latex);
-
-                    if (latex.includes("\\gets")) {
-                        // This is an assignment. Just write a check at the end
-                        this.mathField.write("\\checkmark");
-                    } else {
-                        // Type out the result
-                        this.mathField.write("=" + result);
-                    }
-
-                    // Make field green
-                    this.dom.style.backgroundColor = "rgb(189, 255, 192)";
-                } catch (error) {
-                    // Something bad happened. Make field red. 
-                    this.dom.style.backgroundColor = "rgb(255, 189, 189)";
-
-                    console.error(error);
-                }
-
-                // Restore color after 3 seconds
-                setTimeout(() => {this.dom.style.backgroundColor = ""}, 3000);
-            })
+            evaluateSympy(this.mathField, this.dom);
         } else if (event.key === "Enter") {
             // Enter should do nothing inside mathquill elements
             event.preventDefault();
@@ -762,6 +722,68 @@ clearSympyButton.addEventListener('mousedown', (event) => {
     loadPyScript().then(() => {
         clear_sympy();
     });
+});
+
+function evaluateSympy(mathField, dom) {
+    // Evaluate sympy on current mathfield, also given corresponding dom element
+
+    // Take current latex, pass to sympy, and get result
+    let latex = mathField.latex();
+
+    // Move to right end. If it ends with =, we dont want it, so remove
+    mathField.moveToRightEnd();
+    if (latex.endsWith("=")) {
+        mathField.keystroke("Backspace");
+        latex = latex.substring(0, latex.length - 1);
+    }
+
+    // We must wait for pyscript to be done
+    // First, write some dots
+    mathField.write("\\dots");
+
+    loadPyScript().then(() => {
+        // Erase the dots
+        mathField.keystroke("Backspace");
+
+        try {
+            const result = sympify(latex);
+
+            if (latex.includes("\\gets")) {
+                // This is an assignment. Just write a check at the end
+                mathField.write("\\checkmark");
+            } else {
+                // Type out the result
+                mathField.write("=" + result);
+            }
+
+            // Make field green
+            dom.style.backgroundColor = "rgb(189, 255, 192)";
+        } catch (error) {
+            // Something bad happened. Make field red. 
+            dom.style.backgroundColor = "rgb(255, 189, 189)";
+
+            console.error(error);
+        }
+
+        // Restore color after 3 seconds
+        setTimeout(() => {dom.style.backgroundColor = ""}, 3000);
+    })
+}
+
+let evalSympyButton = document.getElementById("eval-sympy");
+
+evalSympyButton.addEventListener("mousedown", (event) => {
+    event.preventDefault(); // Do not lose focus from mathquill element
+
+    try {
+        // First, get mathquill element
+        const mathquillElement = document.activeElement.parentElement.parentElement;
+
+        if (mathquillElement && mathquillElement.tagName == "SPAN") {
+            // We assume this is a mathquill element
+            evaluateSympy(MQ(mathquillElement), mathquillElement);
+        }
+    } catch(_) {}
 })
 
 let screenshotMathButton = document.getElementById("screenshot-math");

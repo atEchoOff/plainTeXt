@@ -381,11 +381,13 @@ function handleButtonChanges() {
         screenshotMathButton.disabled = false;
         mathButton.textContent = "Exit Math";
         alignButton.disabled = true;
+        evalSympyButton.disabled = false;
     } else {
         // We are out of mathquill element
         screenshotMathButton.disabled = true;
         mathButton.textContent = "Create Math";
         alignButton.disabled = false;
+        evalSympyButton.disabled = true;
     }
 }
 
