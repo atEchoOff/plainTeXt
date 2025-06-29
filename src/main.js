@@ -227,9 +227,15 @@ function applyCommand(state, dispatch) {
             const codeBlockNode = schema.nodes.codeBlock.create({initialize: true, lang: command});
 
             tr = tr.replaceSelectionWith(codeBlockNode);
+        } else if (command === "align") {
+            // We will completely return here so we dont dispatch the transaction
+            // ALlows us to use createAlignEnvironment
+            tr = tr.delete(indexOfSlash, curPos);
+
+            nextFrame(createAlignEnvironment);
         }
 
-        if (command !== "code") {
+        if (command !== "python" && command !== "javascript" && command !== "java") {
             createNewMark = true; // We trigger the execCommand to create an empty tag
         }
 

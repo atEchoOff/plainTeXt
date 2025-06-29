@@ -833,10 +833,7 @@ screenshotMathButton.addEventListener('mousedown', (event) => {
     } catch(_) {}
 });
 
-let alignButton = document.getElementById("create-align");
-
-alignButton.addEventListener("mousedown", (event) => {
-    event.preventDefault(); // Do not lose focus from mathquill element
+function createAlignEnvironment() {
     let deepestElement = getDeepestElementAtSelection();
 
     // This procedure places the selection in an empty line between text to the left and right, if exists
@@ -866,4 +863,12 @@ alignButton.addEventListener("mousedown", (event) => {
         const mathField = MQ(document.activeElement.parentElement.parentElement);
         mathField.cmd("\\align");
     })
+}
+
+let alignButton = document.getElementById("create-align");
+
+alignButton.addEventListener("mousedown", (event) => {
+    event.preventDefault(); // Do not lose focus from mathquill element
+    
+    createAlignEnvironment();
 })
