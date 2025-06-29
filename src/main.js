@@ -46,6 +46,7 @@ const textSpec = {
 // this is a fake command, babel doesnt like to combine files for some reason
 import_from_local("mathquill.js");
 import_from_local("image.js");
+import_from_local("codeblock.js");
 
 const schema = new Schema({
     nodes: {
@@ -54,7 +55,8 @@ const schema = new Schema({
         paragraph: paragraphSpec,
         text: textSpec,
         mathquill: mathQuillNodeSpec,
-        image: imageSpec
+        image: imageSpec,
+        codeBlock: codeBlockSpec
         },
     marks: {
         strong: basicSchema.spec.marks.get("strong"),
@@ -218,8 +220,19 @@ function applyCommand(state, dispatch) {
         } else if (command === "remark") {
             tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.remark.create()]);
+        } else if (command === "python" || command === "javascript" || command === "java") {
+            tr = tr.delete(indexOfSlash, curPos);
+            
+            // Set initialize to true to focus on creation
+            const codeBlockNode = schema.nodes.codeBlock.create({initialize: true, lang: command});
+
+            tr = tr.replaceSelectionWith(codeBlockNode);
         }
-        createNewMark = true; // We trigger the execCommand to create an empty tag
+
+        if (command !== "code") {
+            createNewMark = true; // We trigger the execCommand to create an empty tag
+        }
+
         dispatch(tr);
     } else {
         return false;
@@ -291,6 +304,10 @@ editor = new EditorView(editorElement, {
             mathquill(node, view, getPos) {
                 return new MathQuillNodeView(node, view, getPos);
             },
+
+            codeBlock(node, view, getPos) {
+                return new CodeBlockView(node, view, getPos);
+            }
         }
 });
 
@@ -374,20 +391,45 @@ function decorateMark(element) {
     }
 }
 
+const commandDropDown = document.getElementById("command-drop-down");
+
 function handleButtonChanges() {
     // Activate or deactivate buttons
     if (document.activeElement && document.activeElement.tagName == "TEXTAREA") {
-        // We are in a mathquill element, so activate screenshot button and set toggle text to exit
+        // We are in a mathquill element
         screenshotMathButton.disabled = false;
+
+        mathButton.disabled = false;
         mathButton.textContent = "Exit Math";
+
         alignButton.disabled = true;
         evalSympyButton.disabled = false;
+
+        commandDropDown.disabled = true;
     } else {
         // We are out of mathquill element
         screenshotMathButton.disabled = true;
+
+        mathButton.disabled = false;
         mathButton.textContent = "Create Math";
+
         alignButton.disabled = false;
         evalSympyButton.disabled = true;
+
+        commandDropDown.disabled = false;
+    }
+
+    if (document.activeElement && document.activeElement.className == "cm-content") {
+        // We are in a code block. 
+        screenshotMathButton.disabled = true;
+
+        mathButton.disabled = true;
+        mathButton.textContent = "Create Math";
+        
+        alignButton.disabled = true;
+        evalSympyButton.disabled = true;
+
+        commandDropDown.disabled = true;
     }
 }
 
