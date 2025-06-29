@@ -98,6 +98,15 @@ function latext(returnLaTeX) {
             
             // Add some newlines after each linebreak to made it more readable
             output.push(line.replaceAll("\\\\", "\\\\\n"));
+        } else if (line.startsWith("\\python") 
+                || line.startsWith("\\javascript") 
+                || line.startsWith("\\java")) {
+            // This is code
+            const language = line.substring(1, line.indexOf("{"));
+            const code = line.substring(line.indexOf("{") + 1, line.lastIndexOf("}"));
+            output.push("\\begin{" + language + "}");
+            output.push(decodeURIComponent(code));
+            output.push("\\end{" + language + "}");
         } else {
             output.push(line);
         }
@@ -124,7 +133,7 @@ function latext(returnLaTeX) {
 \\usepackage{amssymb}
 \\usepackage{changepage,threeparttable}
 \\usepackage{mathabx,epsfig}
-\\usepackage{listings}
+\\usepackage{color, listings}
 \\lstset{
     basicstyle=\\ttfamily,
     escapechar=\\%
@@ -158,6 +167,39 @@ function latext(returnLaTeX) {
 \\newtheorem{corollary}{Corollary}[section]
 \\newtheorem{lemma}{Lemma}[section]
 \\newtheorem{remark}{Remark}[section]
+
+\\definecolor{dkgreen}{rgb}{0,0.6,0}
+\\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\\lstset{frame=tb,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\\small\\ttfamily},
+  numbers=none,
+  numberstyle=\\tiny\\color{gray},
+  keywordstyle=\\color{blue},
+  commentstyle=\\color{dkgreen},
+  stringstyle=\\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\\lstnewenvironment{python}[1][]{%
+  \\lstset{language=Python, #1}%
+}{}
+
+\\lstnewenvironment{java}[1][]{%
+  \\lstset{language=Java, #1}%
+}{}
+
+\\lstnewenvironment{javascript}[1][]{%
+  \\lstset{language=Java, #1} % at this time, JS is not supported by lstlistings
+}{}
+
 \\begin{document}
 
     ` + docString + `

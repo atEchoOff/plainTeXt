@@ -33,6 +33,9 @@ function fragToTextFrag(fragment) {
             // Convert mathquill node to $latex$ textnode
             const textNode = schema.text("$" + child.attrs.latex + "$");
             nodes.push(textNode);
+        } else if (child.type.name === "codeBlock") {
+            const textNode = schema.text("\\" + child.attrs.lang + "{" + encodeURIComponent(child.attrs.code) + "}");
+            nodes.push(textNode);
         } else if (child.type.name === "image") {
             nodes.push(child.copy(child));
         } else if (child.type.name === "text" && child.marks.length) {
@@ -114,7 +117,12 @@ function textToFrag(pastedText) {
     const propositionregex = /(\\proposition\{((?!\\proposition\{)[^}]*)\})|/
     const corollaryregex = /(\\corollary\{((?!\\corollary\{)[^}]*)\})|/
     const lemmaregex = /(\\lemma\{((?!\\lemma\{)[^}]*)\})|/
-    const remarkregex = /(\\remark\{((?!\\remark\{)[^}]*)\})/
+    const remarkregex = /(\\remark\{((?!\\remark\{)[^}]*)\})|/
+
+    const pythonregex = /(\\python\{((?!\\python\{)[^}]*)\})|/
+    const javascriptregex = /(\\javascript\{((?!\\javascript\{)[^}]*)\})|/
+    const javaregex = /(\\java\{((?!\\java\{)[^}]*)\})/
+
     const regex = new RegExp(
         mqregex.source + 
         textbfregex.source + 
@@ -132,13 +140,16 @@ function textToFrag(pastedText) {
         propositionregex.source +
         corollaryregex.source +
         lemmaregex.source +
-        remarkregex.source
+        remarkregex.source +
+        pythonregex.source +
+        javascriptregex.source +
+        javaregex.source
     , "g")
     let lastIndex = 0;
     let nodes = [];
     
     // Loop through matches
-    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, offset) => {
+    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, offset) => {
         let text = pastedText.slice(lastIndex, offset);
         if (offset > lastIndex) {
             // This is text
@@ -245,6 +256,24 @@ function textToFrag(pastedText) {
             nodes.push(schema.text(p33, [schema.marks.remark.create()]));
 
             lastIndex = offset + match.length;
+        } else if (p35) {
+            // This is python code
+            const decoded = decodeURIComponent(p35);
+            nodes.push(schema.nodes.codeBlock.create({lang: "python", code: decoded}, schema.text(decoded)));
+            
+            lastIndex = offset + match.length;
+        } else if (p37) {
+            // This is javascript code
+            const decoded = decodeURIComponent(p37);
+            nodes.push(schema.nodes.codeBlock.create({lang: "javascript", code: decoded}, schema.text(decoded)));
+
+            lastIndex = offset + match.length;
+        } else if (p39) {
+            // This is javascript code
+            const decoded = decodeURIComponent(p39);
+            nodes.push(schema.nodes.codeBlock.create({lang: "java", code: decoded}, schema.text(decoded)));
+
+            lastIndex = offset + match.length;
         }
     });
     
@@ -336,8 +365,12 @@ const mathQuillPlugin = new Plugin({
             let imgCounter = 0;
             for (let node of newContent.content) {
                 let fragment = node.content;
-
-                if (fragment.size == 0) {
+                
+                if (node.type.name == "text") {
+                    // This is a code block text node, it is not an empty line despite fragment.size == 0
+                    lines.push(node.text);
+                }
+                else if (fragment.size == 0) {
                     // Empty fragments are just empty lines
                     lines.push("");
                 } else if (fragment.content && fragment.content.type && fragment.content.type.name === "image") {
@@ -382,10 +415,8 @@ const mathQuillPlugin = new Plugin({
                         lineText = lineText.substring(0, lineText.length - 1);
                     }
                     let ttf = textToFrag(lineText);
-                    if (ttf && ttf[0] && ttf[0].type && ttf[0].type.name === "image") {
-                        // This originally was a text node containing \includegraphics
-                        // image data was found in imageData, so ttf is an image node
-                        // dont put it in a paragraph
+                    if (ttf && ttf[0] && ttf[0].type && (ttf[0].type.name === "image" || ttf[0].type.name === "codeBlock")) {
+                        // Images and codeBlocks dont go into a paragraph
                         newNode = ttf[0];
                     } else {
                         newNode = schema.nodes.paragraph.create(null, Fragment.fromArray(ttf));

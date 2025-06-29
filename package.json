@@ -49,9 +49,14 @@
     "@babel/preset-env": "^7.26.9",
     "browserify": "^17.0.1",
     "electron": "^37.0.0",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "esbuild": "0.25.5"
   },
   "dependencies": {
+    "@codemirror/lang-java": "^6.0.2",
+    "@codemirror/lang-javascript": "^6.2.4",
+    "@codemirror/lang-python": "^6.2.1",
+    "codemirror": "^6.0.2",
     "prosemirror-commands": "^1.7.0",
     "prosemirror-history": "^1.4.1",
     "prosemirror-image-plugin": "^2.10.0",
