@@ -236,7 +236,7 @@ function applyCommand(state, dispatch) {
         }
 
         if (command !== "python" && command !== "javascript" && command !== "java") {
-            createNewMark = true; // We trigger the execCommand to create an empty tag
+            createNewMark = true; // We trigger zero width space creation to make visible
         }
 
         dispatch(tr);
@@ -374,7 +374,7 @@ function getDeepestElementAtSelection() {
     return null;
 }
 
-// Save whether or not we want to create a new (empty) mark tag with execCommand
+// Save whether or not we want to create a new (empty) mark tag
 let createNewMark = false;
 
 function decorateMark(element) {
@@ -504,14 +504,14 @@ document.addEventListener('click', (event) => {
 })
 
 function decorateAndCreateIfNeeded() {
-    // Decorate the current element, create it (FIXME uses execCommand im SORRY) if needed
+    // Decorate the current element, place in zero width space to make it visible
     const element = getDeepestElementAtSelection();
     decorateMark(element);
 
     if (createNewMark && editor.state.storedMarks && editor.state.storedMarks.length == 1) {
         // This happens when a mark is triggered by prosemirror. However, it doesnt create a tag
         // Since we want decorations, this force creates the tag
-        document.execCommand("insertHTML", false, "<a>\u200b</a>");
+        typeText("\u200b");
         nextFrame(() => {decorateMark(getDeepestElementAtSelection());});
         createNewMark = false;
     }
