@@ -542,6 +542,26 @@ document.addEventListener('keydown', (event) => {
 })
 import_from_local("save-open.js");
 
+function isElectron() {
+    // https://stackoverflow.com/questions/61725325/detect-an-electron-instance-via-javascript
+    // Renderer process
+    if (typeof window !== 'undefined' && typeof window.process === 'object' && window.process.type === 'renderer') {
+        return true;
+    }
+
+    // Main process
+    if (typeof process !== 'undefined' && typeof process.versions === 'object' && !!process.versions.electron) {
+        return true;
+    }
+
+    // Detect the user agent when the `nodeIntegration` option is set to true
+    if (typeof navigator === 'object' && typeof navigator.userAgent === 'string' && navigator.userAgent.indexOf('Electron') >= 0) {
+        return true;
+    }
+
+    return false;
+}
+
 // Save if pyscript is loaded
 let pyScriptLoaded = false;
 
@@ -567,13 +587,28 @@ function loadPyScript() {
         // Add PyScript CSS
         const link = document.createElement("link");
         link.rel = "stylesheet";
-        link.href = "https://pyscript.net/releases/2025.5.1/core.css";
+
+        if (isElectron()) {
+            // In electron, so load locally!
+            link.href = "dist/pyscript/core.css";
+        } else {
+            loaderElement.innerText += "\nDownloading PyScript...";
+            link.href = "https://pyscript.net/releases/2025.5.1/core.css";
+        }
+
         document.head.appendChild(link);
 
         // Add PyScript JS
         const script = document.createElement("script");
-        script.src = "https://pyscript.net/releases/2025.5.1/core.js";
         script.type = "module";
+
+        if (isElectron()) {
+            // In electron, so load locally!
+            script.src = "dist/pyscript/core.js";
+        } else {
+            script.src = "https://pyscript.net/releases/2025.5.1/core.js";
+        }
+
         document.head.appendChild(script);
 
         script.onload = () => {

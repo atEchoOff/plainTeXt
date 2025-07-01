@@ -12,8 +12,10 @@
     "productName": "MathScript",
     "files": [
       "dist/*.js",
+      "dist/pyscript/*",
       "style/*",
       "style/fonts/*",
+      "script/*",
       "electron.js",
       "index.html",
       "package.json"
@@ -56,6 +58,7 @@
     "@codemirror/lang-java": "^6.0.2",
     "@codemirror/lang-javascript": "^6.2.4",
     "@codemirror/lang-python": "^6.2.1",
+    "@pyscript/core": "^0.6.60",
     "codemirror": "^6.0.2",
     "prosemirror-commands": "^1.7.0",
     "prosemirror-history": "^1.4.1",

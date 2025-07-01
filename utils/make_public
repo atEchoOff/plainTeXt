@@ -2,11 +2,13 @@
 
 # Ensure the destination directories exist
 mkdir -p public/dist
+mkdir -p public/script
 mkdir -p public/mqeditor/build
 mkdir -p public/style
 
 # Move folders and file to the corresponding destinations
 cp dist/*.js public/dist/
-cp -r mqeditor/build public/mqeditor/
 cp -r style public/
-cp -r index.html public/
+cp index.html public/
+cp -r script public/
+# cp -r dist/pyscript public/dist/ importantly, this is not needed since it can't be served dynamically anyway!
