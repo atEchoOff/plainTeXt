@@ -12,3 +12,14 @@ cp -r style public/
 cp index.html public/
 cp -r script public/
 # cp -r dist/pyscript public/dist/ importantly, this is not needed since it can't be served dynamically anyway!
+
+if [ "$1" == "--executables" ]; then
+    # Compile executables for current OS and windows
+    npm run build
+    npm run build -- --mac
+    npm run build -- --win
+
+    mv dist/*.deb public
+    mv dist/*.dmg public
+    mv dist/*.exe public
+fi

@@ -2,6 +2,7 @@
   "name": "mathscript",
   "version": "1.0.0",
   "main": "electron.js",
+  "author": "Brian Christner <at.echo.off@outlook.com>",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
@@ -24,21 +25,20 @@
       "target": [
         "nsis"
       ],
-      "icon": "assets/icon.ico"
+      "icon": "icons/icon.ico"
     },
     "linux": {
       "target": [
         "AppImage",
         "deb"
       ],
-      "icon": "assets/icon.png"
+      "icon": "icons/icon.svg"
     }
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/atEchoOff/MathScript.git"
   },
-  "author": "",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/atEchoOff/MathScript/issues"
