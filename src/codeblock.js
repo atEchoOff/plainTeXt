@@ -108,7 +108,7 @@ class CodeBlockView {
             { key: "ArrowDown", run: () => this.maybeEscape("line", 1) },
             { key: "ArrowRight", run: () => this.maybeEscape("char", 1) },
             {
-                key: "Ctrl-Enter", run: () => {
+                key: "Ctrl-Enter", mac: "Cmd-Enter", run: () => {
                     if (!exitCode(view.state, view.dispatch)) return false
                     view.focus()
                     return true

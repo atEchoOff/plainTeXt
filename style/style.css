@@ -83,7 +83,7 @@ p {
 }
 
 .reference:hover:not(.selected-mark):not(.label)::after {
-    content: "ctrl+click to follow";
+    content: "Ctrl+click to follow";
     position:absolute;
     top:100%;
     left:0;

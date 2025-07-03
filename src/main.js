@@ -15,6 +15,21 @@ import {
 // Thanks https://stackoverflow.com/questions/38631302/requestanimationframe-not-waiting-for-the-next-frame
 var nextFrame = function(fn) { requestAnimationFrame(function() { requestAnimationFrame(fn); }); };
 
+// Save if we are on Mac
+const isMac = /mac/i.test(navigator.userAgentData?.platform || navigator.platform);
+
+// Make a ctrlKey function that works for mac and windows/linux (normal OSes)
+var ctrlKey;
+if (isMac) {
+    ctrlKey = function(event) {
+        return event.metaKey;
+    }
+} else {
+    ctrlKey = function(event) {
+        return event.ctrlKey;
+    }
+}
+
 // Setup images
 let imagePluginSettings = {...defaultSettings};
 
@@ -451,7 +466,7 @@ document.addEventListener('selectionchange', () => {
 });
 
 document.addEventListener('click', (event) => {
-    if (event.ctrlKey && event.target.classList.contains('reference') || event.target.classList.contains('mq-reference')) {
+    if (ctrlKey(event) && event.target.classList.contains('reference') || event.target.classList.contains('mq-reference')) {
         // Handle moving to label for reference
         let foundTarget = false;
         let searchText = event.target.innerText.replaceAll("\u200b", ""); // silly mathquill, no zero-width spaces please!
@@ -522,17 +537,17 @@ document.addEventListener('keydown', (event) => {
     nextFrame(decorateAndCreateIfNeeded);
 
     // Handle keybinds
-    if (event.ctrlKey && event.key.toLowerCase() == "s") {
+    if (ctrlKey(event) && event.key.toLowerCase() == "s") {
         event.preventDefault();
         saveFile();
-    } else if (event.ctrlKey && event.shiftKey && event.key == "O") {
+    } else if (ctrlKey(event) && event.shiftKey && event.key == "O") {
         event.preventDefault();
         toOverleaf();
         alert("To view figures in Overleaf, download figures first and transfer to Overleaf.");
-    } else if (event.ctrlKey && event.key.toLowerCase() == "o") {
+    } else if (ctrlKey(event) && event.key.toLowerCase() == "o") {
         event.preventDefault();
         openFile();
-    } else if (event.ctrlKey && event.shiftKey && event.key == "L") {
+    } else if (ctrlKey(event) && event.shiftKey && event.key == "L") {
         event.preventDefault();
         latext(); // Will copy result to clipboard
         alert("LaTeX copied to clipboard!");
