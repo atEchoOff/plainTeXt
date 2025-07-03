@@ -513,7 +513,8 @@ class MathQuillNodeView {
             editor.dispatch(tr.setSelection(selection).scrollIntoView());
             editor.focus();
             return true;
-        } else if (event.key === "+" && ctrlKey(event) && event.shiftKey) {
+        } else if ((event.key === "+" || event.key === "=") && ctrlKey(event) && event.shiftKey) {
+            //                                      ^ for macOS lol
             event.preventDefault();
 
             evaluateSympy(this.mathField, this.dom);
