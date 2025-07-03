@@ -346,7 +346,7 @@ const mathQuillPlugin = new Plugin({
 
         handleClick(view, pos, event) {
             // This isn't really for mathquill, but will disable the ctrl+click event
-            return event.ctrlKey;
+            return ctrlKey(event);
         },
 
         transformCopied(slice) {
@@ -513,23 +513,23 @@ class MathQuillNodeView {
             editor.dispatch(tr.setSelection(selection).scrollIntoView());
             editor.focus();
             return true;
-        } else if (event.key === "+" && event.ctrlKey && event.shiftKey) {
+        } else if (event.key === "+" && ctrlKey(event) && event.shiftKey) {
             event.preventDefault();
 
             evaluateSympy(this.mathField, this.dom);
         } else if (event.key === "Enter") {
             // Enter should do nothing inside mathquill elements
             event.preventDefault();
-        } else if (event.ctrlKey && event.shiftKey && event.key === "B") {
+        } else if (ctrlKey(event) && event.shiftKey && event.key === "B") {
             event.preventDefault();
             this.mathField.cmd("\\vecf");
-        } else if (event.ctrlKey && event.key === "b") {
+        } else if (ctrlKey(event) && event.key === "b") {
             event.preventDefault();
             this.mathField.cmd("\\vect");
         } else if (event.key === "&") {
             event.preventDefault();
             this.mathField.cmd("\\aligned");
-        } else if (event.ctrlKey && event.key == "p") {
+        } else if (ctrlKey(event) && event.key == "p") {
             // Download mathquill screenshot
             event.preventDefault();
             downloadMathQuillScreenShot(this.dom);
