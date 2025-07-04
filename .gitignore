@@ -11,3 +11,5 @@ style/mathquill.css
 style/pmeditor.css
 style/fonts/*
 /script
+*.zip
+*.py

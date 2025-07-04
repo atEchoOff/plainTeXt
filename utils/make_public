@@ -3,7 +3,6 @@
 # Ensure the destination directories exist
 mkdir -p public/dist
 mkdir -p public/script
-mkdir -p public/mqeditor/build
 mkdir -p public/style
 
 # Move folders and file to the corresponding destinations
