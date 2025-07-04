@@ -3,7 +3,7 @@
 # Ensure the destination directories exist
 mkdir -p public/dist
 mkdir -p public/script
-mkdir -p public/style
+mkdir -p public/style/fonts
 
 # Move folders and file to the corresponding destinations
 cp dist/*.js public/dist/

@@ -1,6 +1,6 @@
 mkdir -p dist
 python3 utils/load_into.py src/main.js > dist/output.js
-babel dist/output.js --out-file dist/output.js
+./node_modules/.bin/babel dist/output.js --out-file dist/output.js
 ./node_modules/.bin/esbuild dist/output.js --bundle --outfile=dist/output.js --allow-overwrite
 cp mqeditor/build/mathquill.js dist/mathquill.js
 cp mqeditor/build/mathquill.css style/mathquill.css
