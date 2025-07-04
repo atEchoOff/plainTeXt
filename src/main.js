@@ -686,6 +686,10 @@ latextGitHub.addEventListener("click", () => {
     window.open("https://github.com/atEchoOff/MathScript", '_blank').focus();
 });
 
+latextDownload.addEventListener("click", () => {
+    window.open("https://github.com/atEchoOff/MathScript/releases", '_blank').focus();
+});
+
 mqeditorGitHub.addEventListener("click", () => {
     window.open("https://github.com/atEchoOff/mqeditor", "_blank").focus();
 })
