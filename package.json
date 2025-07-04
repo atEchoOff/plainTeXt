@@ -33,6 +33,12 @@
         "deb"
       ],
       "icon": "icons/icon.svg"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "icons/icon.ico"
     }
   },
   "repository": {
