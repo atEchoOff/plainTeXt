@@ -212,6 +212,10 @@ p:has(.qed) {
     font-size:xx-large;
 }
 
+#latext-dropdown {
+    background-color: rgb(255, 198, 93);
+}
+
 button {
     display: block;
     margin: 0;
