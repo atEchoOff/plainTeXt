@@ -12,6 +12,8 @@
     border-radius: 8px;
 
     overflow: auto; 
+
+    font-size: 20px;
 }
 
 #editor p {
