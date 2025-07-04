@@ -677,3 +677,15 @@ for (let commandButton of commandButtons) {
         })
     })
 }
+
+const latextGitHub = document.getElementById("latext-github");
+const latextDownload = document.getElementById("latext-download");
+const mqeditorGitHub = document.getElementById("mqeditor-github");
+
+latextGitHub.addEventListener("click", () => {
+    window.open("https://github.com/atEchoOff/MathScript", '_blank').focus();
+});
+
+mqeditorGitHub.addEventListener("click", () => {
+    window.open("https://github.com/atEchoOff/mqeditor", "_blank").focus();
+})
