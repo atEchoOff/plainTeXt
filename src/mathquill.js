@@ -295,6 +295,12 @@ function verticalAlign(mathquillElement) {
         rootBlock = rootBlock.children[1].firstChild;
     }
 
+    // If rootBlock is a mq-non-leaf and its first child is a mq-diacritic-stem, move to stem contents
+
+    if (rootBlock && rootBlock.classList.contains("mq-non-leaf") && rootBlock.firstChild && rootBlock.firstChild.classList.contains("mq-diacritic-above")) {
+        rootBlock = rootBlock.firstChild.nextSibling;
+    }
+
     if (rootBlock === null || rootBlock.classList === null) {
         return;
     }
