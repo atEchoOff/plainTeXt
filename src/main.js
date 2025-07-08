@@ -693,3 +693,13 @@ latextDownload.addEventListener("click", () => {
 mqeditorGitHub.addEventListener("click", () => {
     window.open("https://github.com/atEchoOff/mqeditor", "_blank").focus();
 })
+
+const darkModeButton = document.getElementById("dark-mode-button");
+
+darkModeButton.addEventListener("click", () => {
+    if (document.body.classList.contains("dark")) {
+        document.body.classList.remove("dark");
+    } else {
+        document.body.classList.add("dark");
+    }
+})
