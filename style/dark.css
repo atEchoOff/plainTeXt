@@ -82,3 +82,8 @@ body.dark {
     color: white;
     background-color: rgb(23, 23, 23);
 }
+
+.screenshotting {
+    /* For purposes of taking screenshots of mathquill elements in darkmode */
+    color: black;
+}
