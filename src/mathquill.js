@@ -425,13 +425,16 @@ const mathQuillPlugin = new Plugin({
                         // Images and codeBlocks dont go into a paragraph
                         newNode = ttf[0];
                     } else {
-                        newNode = schema.nodes.paragraph.create(null, Fragment.fromArray(ttf));
+                        newNode = schema.nodes.paragraph.create({class: "initial-render"}, Fragment.fromArray(ttf));
                     }
                 }
                 nodes.push(newNode);
             });
 
             let frag = Fragment.fromArray(nodes);
+
+            // After initial render, set to virtual scrolling
+            nextFrame(loadVirtualScroll);
 
             return new Slice(frag, slice.openStart, slice.openEnd);
         }, 
