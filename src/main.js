@@ -48,8 +48,11 @@ const docSpec = {
 const paragraphSpec = {
     content: "inline*",
     group: "block",
+    attrs: {
+        class: { default: null }
+    },
     parseDOM: [{tag: "p"}],
-    toDOM: () => ["p", 0]
+    toDOM: (node) => ["p", node.attrs, 0]
 };
   
 // Define the 'text' node
@@ -555,6 +558,8 @@ document.addEventListener('keydown', (event) => {
 
     scrollCursorIntoView();
 })
+
+import_from_local("virtualscroll.js");
 import_from_local("save-open.js");
 
 function isElectron() {

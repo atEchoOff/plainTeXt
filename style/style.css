@@ -19,6 +19,13 @@
 #editor p {
     /* Stop extra margin between lines in prosemirror */
     margin: 0;
+
+    content-visibility: auto;
+    contain-intrinsic-size: auto;
+}
+
+.initial-render {
+    content-visibility: visible !important;
 }
 
 .highlighted {
