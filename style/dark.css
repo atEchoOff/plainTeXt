@@ -1,0 +1,84 @@
+.dark #editor {
+    background-color: #000000;
+    border-color: #2e2a24;
+    color: white;
+}
+
+body.dark {
+    background-color: #0b0b06;
+}
+
+.dark .reference {
+    color: rgb(119, 119, 255);
+}
+
+.dark .label {
+    color: white !important;
+}
+
+.dark .reference:hover:not(.selected-mark):not(.label)::after {
+    color: white;
+    background-color: black;
+}
+
+.dark .selected-mark::after {
+    color: rgb(87, 87, 87);
+}
+
+.dark .py-script-loader {
+    color: black;
+    background-color: rgba(255, 255, 255, 0.424);
+}
+
+.dark #latext-dropdown {
+    background-color: rgb(91, 60, 4);
+}
+
+.dark button {
+    color: #c8beae;
+}
+
+.dark button[title]::after {
+    background-color: #0c0b09;
+    border-color: #635c50;
+}
+
+.dark button:hover {
+    background-color: #0c0b09;
+    border-color: #635c50;
+}
+
+.dark button:disabled, .dark button[disabled] {
+    color: #635c50;
+    background-color: #0c0b09;
+}
+
+.dark .tab-button {
+    background-color: #060504;
+    border-color: #2e2a24;
+}
+
+.dark .dropdown-content {
+    background-color: #000000;
+    border-color: #2e2a24;
+}
+
+.dark #button-container {
+    background-color: #000000;
+    border-bottom-color: #2e2a24;
+}
+
+.dark .cm-lineNumbers {
+    background-color: rgb(22, 22, 22);
+    color: rgb(227, 227, 227);
+}
+
+.dark #dark-mode-button {
+    color: black;
+    background-color: rgb(210, 210, 210);
+}
+
+#dark-mode-button {
+    color: white;
+    background-color: rgb(23, 23, 23);
+}
