@@ -708,6 +708,9 @@ function downloadMathQuillScreenShot(mathQuillElement) {
     // Unfocus so we dont get borders around element and in align/matrices
     mathQuillElement.classList.remove("mq-focused");
 
+    // Set color to black
+    mathQuillElement.classList.add("screenshotting");
+
     // Convert the MathQuill element into an image
     html2canvas(mathQuillElement, {
         backgroundColor: null, // Transparent background
@@ -733,8 +736,9 @@ function downloadMathQuillScreenShot(mathQuillElement) {
             document.body.removeChild(a);
             URL.revokeObjectURL(pngUrl);
 
-            // Refocus!
+            // Refocus and revert color!
             mathQuillElement.classList.add("mq-focused");
+            mathQuillElement.classList.remove("screenshotting");
         }, "image/png");
     }).catch(error => {
         console.error("Error capturing MathQuill element:", error);
