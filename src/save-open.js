@@ -215,11 +215,7 @@ function latext(returnLaTeX) {
     }
 }
 
-let openingFile = false; // If we are opening a file, trigger a scroll down before enabling virtual scroll
-
 async function openFile(create) {
-    openingFile = true;
-
     const options = {
         startIn: 'documents',
         types: [
