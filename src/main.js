@@ -49,7 +49,7 @@ const paragraphSpec = {
     content: "inline*",
     group: "block",
     attrs: {
-        class: { default: null }
+        class: { default: "" }
     },
     parseDOM: [{tag: "p"}],
     toDOM: (node) => ["p", node.attrs, 0]
@@ -65,6 +65,7 @@ const textSpec = {
 import_from_local("mathquill.js");
 import_from_local("image.js");
 import_from_local("codeblock.js");
+import_from_local("virtualscroll.js");
 
 const schema = new Schema({
     nodes: {
@@ -321,18 +322,23 @@ editor = new EditorView(editorElement, {
                 keymap(baseKeymap),
                 imagePlugin({...imagePluginSettings}),
                 mathQuillInputRule, // Create mathquill element on ;
-                mathQuillPlugin
+                mathQuillPlugin,
+                virtualScrollPlugin
             ],
         }),
-        nodeViews: {
-            mathquill(node, view, getPos) {
-                return new MathQuillNodeView(node, view, getPos);
-            },
+    nodeViews: {
+        mathquill(node, view, getPos) {
+            return new MathQuillNodeView(node, view, getPos);
+        },
 
-            codeBlock(node, view, getPos) {
-                return new CodeBlockView(node, view, getPos);
-            }
-        }
+        codeBlock(node, view, getPos) {
+            return new CodeBlockView(node, view, getPos);
+        },
+
+        paragraph: (node, view, getPos) => {
+            return new ParagraphNodeView();
+        },
+    }
 });
 
 function simulateKeyPress(key) {
@@ -559,7 +565,6 @@ document.addEventListener('keydown', (event) => {
     scrollCursorIntoView();
 })
 
-import_from_local("virtualscroll.js");
 import_from_local("save-open.js");
 
 function isElectron() {
