@@ -469,6 +469,7 @@ class MathQuillNodeView {
     constructor(node, view, getPos) {
         this.dom = document.createElement("span");
         this.getPos = getPos;
+        this.node = node;
         this.mathField = MQ.MathField(this.dom, {
             handlers: {
                 moveOutOf: function(dir, mathField) {
@@ -488,6 +489,8 @@ class MathQuillNodeView {
                     view.dispatch(tr.setSelection(selection).scrollIntoView());
                     view.focus(); // Focus on cursor outside of mathquill node
                 },
+
+                edit: () => this.updateProseMirror(),
             }
         });
 
@@ -505,6 +508,45 @@ class MathQuillNodeView {
         this.dom.addEventListener('keydown', (e) => this.handleKeyDown(e));
         this.dom.querySelector('textarea').addEventListener('blur', (e) => this.handleBlur());
         this.dom.addEventListener('paste', (e) => this.handlePaste(e));
+    }
+
+    update(node) {
+        if (node.type !== this.node.type) {
+            return false; // default to prosemirror
+        }
+
+        // update internal node reference
+        this.node = node;
+
+        // synchronize latex if necessary (usually if there was an undo or redo)
+        const newLatex = node.attrs.latex;
+
+        if (this.mathField.latex() !== newLatex) {
+            this.mathField.latex(newLatex);
+        }
+
+        return true; // update done, no further processing
+    }
+
+    updateProseMirror() {
+        // Keep node in line with mathField
+        
+        const newLatex = this.mathField.latex();
+
+        // No change necessary
+        if (newLatex === this.node.attrs.latex) {
+            return;
+        }
+
+        // Update latex
+        const { state } = editor;
+        const pos = this.getPos();
+        const transaction = state.tr.setNodeMarkup(pos, null, {
+            ...this.node.attrs,
+            latex: newLatex,
+        });
+
+        editor.dispatch(transaction);
     }
 
     handleKeyDown(event) {
