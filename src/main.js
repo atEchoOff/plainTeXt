@@ -246,12 +246,10 @@ function applyCommand(state, dispatch) {
             const codeBlockNode = schema.nodes.codeBlock.create({initialize: true, lang: command});
 
             tr = tr.replaceSelectionWith(codeBlockNode);
-        } else if (command === "align") {
-            // We will completely return here so we dont dispatch the transaction
-            // ALlows us to use createAlignEnvironment
+        } else if (command === "align" || command === "table") {
             tr = tr.delete(indexOfSlash, curPos);
 
-            nextFrame(createAlignEnvironment);
+            nextFrame(() => {createEnvironment(command)});
         }
 
         if (command !== "python" && command !== "javascript" && command !== "java") {
@@ -428,22 +426,46 @@ function handleButtonChanges() {
     if (document.activeElement && document.activeElement.tagName == "TEXTAREA") {
         // We are in a mathquill element
         screenshotMathButton.disabled = false;
+        if (document.activeElement.parentElement.parentElement.querySelector(".mq-matrix .mq-hasCursor")) {
+            // There is a focused matrix/table/gridlike thing! Allow grid movement.
+            createColumnButton.disabled = false;
+            createRowButton.disabled = false;
+            mergeRightButton.disabled = false;
+            mergeDownButton.disabled = false;
+            noBottomBorderButton.disabled = false;
+            noRightBorderButton.disabled = false;
+        } else {
+            createColumnButton.disabled = true;
+            createRowButton.disabled = true;
+            mergeRightButton.disabled = true;
+            mergeDownButton.disabled = true;
+            noBottomBorderButton.disabled = true;
+            noRightBorderButton.disabled = true;
+        }
 
         mathButton.disabled = false;
         mathButton.textContent = "Exit Math";
 
         alignButton.disabled = true;
+        tableButton.disabled = true;
         evalSympyButton.disabled = false;
 
         commandDropDown.disabled = true;
     } else {
         // We are out of mathquill element
         screenshotMathButton.disabled = true;
+        createColumnButton.disabled = true;
+        createRowButton.disabled = true;
+        mergeRightButton.disabled = true;
+        mergeDownButton.disabled = true;
+        noBottomBorderButton.disabled = true;
+        noRightBorderButton.disabled = true;
 
         mathButton.disabled = false;
         mathButton.textContent = "Create Math";
 
         alignButton.disabled = false;
+        tableButton.disabled = false;
         evalSympyButton.disabled = true;
 
         commandDropDown.disabled = false;
@@ -452,11 +474,18 @@ function handleButtonChanges() {
     if (document.activeElement && document.activeElement.className == "cm-content") {
         // We are in a code block. 
         screenshotMathButton.disabled = true;
+        createColumnButton.disabled = true;
+        createRowButton.disabled = true;
+        mergeRightButton.disabled = true;
+        mergeDownButton.disabled = true;
+        noBottomBorderButton.disabled = true;
+        noRightBorderButton.disabled = true;
 
         mathButton.disabled = true;
         mathButton.textContent = "Create Math";
         
         alignButton.disabled = true;
+        tableButton.disabled = true;
         evalSympyButton.disabled = true;
 
         commandDropDown.disabled = true;
