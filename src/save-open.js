@@ -30,6 +30,169 @@ function getDocumentText() {
     return mathQuillPlugin.props.clipboardTextSerializer(doc.slice(0));
 }
 
+function convertToLatexTable(inputText) {
+    // This function was aided by Google Gemini
+    const tableContentMatch = inputText.trim().match(/\\begin\{table\}([\s\S]*?)\\end\{table\}/);
+
+    let content = tableContentMatch[1];
+    const rawRows = content.split('\\\\').filter(row => row.trim() !== '');
+    
+    const numRows = rawRows.length;
+    const cellRows = rawRows.map(rowStr => rowStr.split('&').map(c => c.trim()));
+
+    // --- Step 1: Calculate column count based on the first row ---
+    let maxCols = 0;
+    cellRows[0].forEach(cell => {
+        const match = cell.match(/\\mergeright\[(\d+)\]/);
+        maxCols += match ? parseInt(match[1]) : 1;
+    });
+
+    // --- Step 2: Create a model grid and populate it, marking merged cells ---
+    const modelGrid = Array(numRows).fill(0).map(() => Array(maxCols).fill(null));
+    for (let r = 0; r < numRows; r++) {
+        let c = 0; 
+        for (const cellContent of cellRows[r]) {
+            while (c < maxCols && modelGrid[r][c] !== null) c++;
+            if (c >= maxCols) continue;
+
+            modelGrid[r][c] = cellContent;
+
+            const rightMatch = cellContent.match(/\\mergeright\[(\d+)\]/);
+            if (rightMatch) {
+                const n = parseInt(rightMatch[1]);
+                const hasNoBottomBorder = cellContent.includes('\\nobottomborder');
+                for (let i = 1; i < n; i++) {
+                    if (c + i < maxCols) modelGrid[r][c + i] = hasNoBottomBorder ? 'BLOCKED_H_NOBOTTOM' : 'BLOCKED_H';
+                }
+            }
+
+            const downMatch = cellContent.match(/\\mergelower\[(\d+)\]/);
+            if (downMatch) {
+                const n = parseInt(downMatch[1]);
+                const hasNoRightBorder = cellContent.includes('\\norightborder');
+                for (let i = 1; i < n; i++) {
+                    if (r + i < numRows) modelGrid[r + i][c] = hasNoRightBorder ? 'BLOCKED_V_NORIGHT' : 'BLOCKED_V';
+                }
+            }
+            c++;
+        }
+    }
+
+    // --- Step 3: Generate the final LaTeX cell content from the model grid ---
+    const outputRows = [];
+    for (let r = 0; r < numRows; r++) {
+        const rowCells = [];
+        for (let c = 0; c < maxCols; c++) {
+            const cell = modelGrid[r][c];
+            if (cell === 'BLOCKED_H' || cell === 'BLOCKED_H_NOBOTTOM') continue;
+            if (cell === 'BLOCKED_V') {
+                rowCells.push('');
+                continue;
+            }
+            
+            // ** FIX: Check if the cell to the left requires us to remove our left border.
+            // This handles cases where a multi-row cell has `\norightborder`.
+            const needsNoLeftBorder = (c > 0 && modelGrid[r][c-1] === 'BLOCKED_V_NORIGHT');
+
+            if (cell === 'BLOCKED_V_NORIGHT') {
+                // This cell is blocked by a multirow that needs no right border.
+                // Render it as an empty cell with no right border, which means the cell
+                // to its right will correctly have no left border.
+                rowCells.push('\\multicolumn{1}{|c}{}');
+                continue;
+            }
+
+            let cellContent = cell === null ? '' : cell;
+            const selfHasNoRightBorder = cellContent.includes('\\norightborder');
+            let cleanContent = cellContent.replace(/\\no(right|bottom)border/g, '').trim();
+
+            const rightMatch = cleanContent.match(/\\mergeright\[(\d+)\]\{(.*)\}/s);
+            const downMatch = cleanContent.match(/\\mergelower\[(\d+)\]\{(.*)\}/s);
+
+            let finalContent = cleanContent;
+            let isMultiRow = false;
+            let multiRowSpan = 1;
+
+            if (rightMatch) {
+                finalContent = rightMatch[2];
+            } else if (downMatch) {
+                finalContent = downMatch[2];
+                isMultiRow = true;
+                multiRowSpan = parseInt(downMatch[1]);
+            }
+            
+            const contentInMath = `$${finalContent}$`;
+            const multiRowContent = `\\multirow{${multiRowSpan}}{*}{${contentInMath}}`;
+            
+            const leftBorder = needsNoLeftBorder ? 'c' : '|c';
+            const rightBorder = selfHasNoRightBorder ? '' : '|';
+            const colSpec = `${leftBorder}${rightBorder}`;
+
+            if (rightMatch) {
+                const colSpan = parseInt(rightMatch[1], 10);
+                rowCells.push(`\\multicolumn{${colSpan}}{${colSpec}}{${contentInMath}}`);
+            } else if (isMultiRow) {
+                if (needsNoLeftBorder || selfHasNoRightBorder) {
+                    rowCells.push(`\\multicolumn{1}{${colSpec}}{${multiRowContent}}`);
+                } else {
+                    rowCells.push(multiRowContent);
+                }
+            }
+            else { // Normal cell
+                    if (needsNoLeftBorder || selfHasNoRightBorder) {
+                    rowCells.push(`\\multicolumn{1}{${colSpec}}{${contentInMath}}`);
+                    } else {
+                    rowCells.push(contentInMath);
+                    }
+            }
+        }
+        outputRows.push(rowCells.join(' & '));
+    }
+
+    // --- Step 4: Assemble the final table string with intelligent horizontal lines ---
+    const columnFormat = `{|${'c|'.repeat(maxCols)}}`;
+    let latexOutput = `\\begin{tabular}{${columnFormat}}\n`;
+    latexOutput += `\\hline\n`; // Top border
+
+    for (let r = 0; r < numRows; r++) {
+        latexOutput += outputRows[r];
+        latexOutput += ' \\\\';
+
+        if (r < numRows - 1) {
+            const ranges = [];
+            let currentRange = null;
+
+            for (let c = 0; c < maxCols; c++) {
+                const isBlockedBelow = modelGrid[r + 1] && (modelGrid[r + 1][c] === 'BLOCKED_V' || modelGrid[r + 1][c] === 'BLOCKED_V_NORIGHT');
+                const hasNoBottomBorder = modelGrid[r][c] && modelGrid[r][c].includes('\\nobottomborder');
+                const isBlockedHorizNoBottom = modelGrid[r][c] === 'BLOCKED_H_NOBOTTOM';
+                
+                if (!isBlockedBelow && !hasNoBottomBorder && !isBlockedHorizNoBottom) {
+                    if (currentRange === null) currentRange = { start: c + 1, end: c + 1 };
+                    else currentRange.end = c + 1;
+                } else {
+                    if (currentRange !== null) ranges.push(currentRange);
+                    currentRange = null;
+                }
+            }
+            if (currentRange !== null) ranges.push(currentRange);
+
+            if (ranges.length === 1 && ranges[0].start === 1 && ranges[0].end === maxCols) {
+                latexOutput += '\n\\hline\n';
+            } else if (ranges.length > 0) {
+                const clines = ranges.map(range => `\\cline{${range.start}-${range.end}}`).join('');
+                latexOutput += `\n${clines}\n`;
+            } else {
+                latexOutput += '\n';
+            }
+        } else {
+            latexOutput += '\n\\hline\n';
+        }
+    }
+    latexOutput += `\\end{tabular}`;
+    return latexOutput;
+}
+
 function latext(returnLaTeX) {
     // Convert document text to latex for pasting into overleaf
     // If returnLaTeX === true, return string instead of copying
@@ -107,6 +270,9 @@ function latext(returnLaTeX) {
             output.push("\\begin{" + language + "}");
             output.push(decodeURIComponent(code));
             output.push("\\end{" + language + "}");
+        } else if (line.startsWith("\\begin{table}")) {
+            // This is a table. We have a function for that!
+            output.push(convertToLatexTable(line));
         } else {
             output.push(line);
         }
