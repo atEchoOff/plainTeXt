@@ -325,7 +325,7 @@ button[disabled] {
 }
 
 /* Show the dropdown content when hovering over the dropdown container */
-.dropdown:hover .dropdown-content {
+.dropdown:hover:not(:has(.tab-button[disabled])) .dropdown-content {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);

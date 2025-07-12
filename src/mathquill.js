@@ -891,7 +891,7 @@ screenshotMathButton.addEventListener('mousedown', (event) => {
     } catch(_) {}
 });
 
-function createAlignEnvironment() {
+function createEnvironment(environment) {
     let deepestElement = getDeepestElementAtSelection();
 
     // This procedure places the selection in an empty line between text to the left and right, if exists
@@ -914,12 +914,12 @@ function createAlignEnvironment() {
         cursorOffset(-2);
     }
 
-    // Now, create an element, get the controller, and execute align
+    // Now, create an element
     placeMathQuillNodeAtSelection();
 
+    // Get controller and execute command
     nextFrame(() => {
-        const mathField = MQ(document.activeElement.parentElement.parentElement);
-        mathField.cmd("\\align");
+        executeKeystrokeInSelectedMQ("\\" + environment, cmd=true);
     })
 }
 
@@ -928,5 +928,70 @@ let alignButton = document.getElementById("create-align");
 alignButton.addEventListener("mousedown", (event) => {
     event.preventDefault(); // Do not lose focus from mathquill element
     
-    createAlignEnvironment();
+    createEnvironment("align");
+});
+
+let tableButton = document.getElementById("create-table");
+
+tableButton.addEventListener("mousedown", (event) => {
+    event.preventDefault(); // Do not lose focus from mathquill element
+    
+    createEnvironment("table");
+});
+
+let createColumnButton = document.getElementById("create-column");
+let createRowButton = document.getElementById("create-row");
+let mergeRightButton = document.getElementById("merge-right");
+let mergeDownButton = document.getElementById("merge-down");
+let noBottomBorderButton = document.getElementById("nbb");
+let noRightBorderButton = document.getElementById("nrb");
+
+function executeKeystrokeInSelectedMQ(keystroke, cmd=false) {
+    const mathquillElement = document.activeElement.parentElement.parentElement;
+
+    if (mathquillElement && mathquillElement.tagName == "SPAN") {
+        // We assume this is a mathquill element
+        const controller = MQ(mathquillElement);
+        if (cmd) {
+            controller.cmd(keystroke);
+        } else {
+            controller.keystroke(keystroke);
+        }
+    }
+}
+
+createColumnButton.addEventListener("mousedown", (event) => {
+    event.preventDefault(); // Do not lose focus from mathquill element
+
+    executeKeystrokeInSelectedMQ("Shift-Right");
+})
+
+createRowButton.addEventListener("mousedown", (event) => {
+    event.preventDefault(); // Do not lose focus from mathquill element
+
+    executeKeystrokeInSelectedMQ("Shift-Down");
+})
+
+mergeRightButton.addEventListener("mousedown", (event) => {
+    event.preventDefault(); // Do not lose focus from mathquill element
+
+    executeKeystrokeInSelectedMQ("Ctrl-Right");
+})
+
+mergeDownButton.addEventListener("mousedown", (event) => {
+    event.preventDefault(); // Do not lose focus from mathquill element
+
+    executeKeystrokeInSelectedMQ("Ctrl-Down");
+})
+
+noBottomBorderButton.addEventListener("mousedown", (event) => {
+    event.preventDefault(); // You get it now
+
+    executeKeystrokeInSelectedMQ("\\nbb", cmd=true);
+})
+
+noRightBorderButton.addEventListener("mousedown", (event) => {
+    event.preventDefault();
+
+    executeKeystrokeInSelectedMQ("\\nrb", cmd=true);
 })
