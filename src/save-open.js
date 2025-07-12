@@ -31,8 +31,41 @@ function getDocumentText() {
 }
 
 function convertToLatexTable(inputText) {
-    // This function was aided by Google Gemini
-    const tableContentMatch = inputText.trim().match(/\\begin\{table\}([\s\S]*?)\\end\{table\}/);
+    // --- Step 0: Find and extract caption ---
+    let captionText = null;
+    let processedInput = inputText;
+    const captionStartIndex = inputText.indexOf('\\caption{');
+
+    if (captionStartIndex !== -1) {
+        let braceLevel = 0;
+        let captionContentEndIndex = -1;
+        const contentStartIndex = captionStartIndex + '\\caption{'.length;
+
+        for (let i = contentStartIndex; i < inputText.length; i++) {
+            if (inputText[i] === '{') {
+                braceLevel++;
+            } else if (inputText[i] === '}') {
+                if (braceLevel === 0) {
+                    // This is the final closing brace for the caption
+                    captionContentEndIndex = i;
+                    break;
+                } else {
+                    braceLevel--;
+                }
+            }
+        }
+
+        if (captionContentEndIndex !== -1) {
+            const captionCommandEndIndex = captionContentEndIndex + 1;
+            const captionCommand = inputText.substring(captionStartIndex, captionCommandEndIndex);
+            captionText = inputText.substring(contentStartIndex, captionContentEndIndex);
+            
+            // Remove the caption command from the input so it's not processed as cell content
+            processedInput = inputText.replace(captionCommand, '');
+        }
+    }
+
+    const tableContentMatch = processedInput.trim().match(/\\begin\{table\}([\s\S]*?)\\end\{table\}/);
 
     let content = tableContentMatch[1];
     const rawRows = content.split('\\\\').filter(row => row.trim() !== '');
@@ -90,8 +123,6 @@ function convertToLatexTable(inputText) {
                 continue;
             }
             
-            // ** FIX: Check if the cell to the left requires us to remove our left border.
-            // This handles cases where a multi-row cell has `\norightborder`.
             const needsNoLeftBorder = (c > 0 && modelGrid[r][c-1] === 'BLOCKED_V_NORIGHT');
 
             if (cell === 'BLOCKED_V_NORIGHT') {
@@ -190,7 +221,16 @@ function convertToLatexTable(inputText) {
         }
     }
     latexOutput += `\\end{tabular}`;
-    return latexOutput;
+    
+    // --- Step 5: Wrap in table environment and add caption ---
+    let finalOutput = `\\begin{table}[h!]\n\\centering\n`;
+    finalOutput += latexOutput;
+    if (captionText) {
+        finalOutput += `\n\\caption{${captionText}}`;
+    }
+    finalOutput += `\n\\end{table}`;
+
+    return finalOutput;
 }
 
 function latext(returnLaTeX) {
