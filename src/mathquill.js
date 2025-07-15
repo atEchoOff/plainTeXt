@@ -512,7 +512,10 @@ class MathQuillNodeView {
         // Event handlers
         this.dom.addEventListener('keydown', (e) => this.handleKeyDown(e));
         this.dom.querySelector('textarea').addEventListener('blur', (e) => this.handleBlur());
-        this.dom.addEventListener('paste', (e) => this.handlePaste(e));
+        this.dom.querySelector('textarea').addEventListener('paste', (e) => {
+            e.stopPropagation();
+            this.handlePaste(e);
+        });
     }
 
     update(node) {
@@ -615,7 +618,6 @@ class MathQuillNodeView {
 
     handlePaste(e) {
         // Manually write pasted text
-        // This is a necessary workaround for prosemirror cancelling paste event
         this.mathField.write(e.clipboardData.getData("text"));
     }
 }
