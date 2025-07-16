@@ -564,22 +564,49 @@ async function saveFile() {
     console.log("Saved!");
 }
 
+async function createZipDataURI() {
+    const zip = new JSZip();
+
+    // Add main.tex file
+    zip.file('main.tex', latext(true));
+
+    // Loop through the imageSrc dictionary to add images
+    for (const id in imageSrc) {
+        const imageData = imageSrc[id];
+
+        // Data URIs are in the format "data:[<mediatype>][;base64],<data>"
+        // We need to extract just the base64 part for JSZip
+        const base64Data = imageData.split(',')[1];
+        
+        // Add the image file to the zip, specifying its name and base64 content
+        zip.file(`${id}.png`, base64Data, { base64: true });
+    }
+
+    // Generate the complete zip file as a base64 string
+    const zipContent = await zip.generateAsync({ type: 'base64' });
+
+    // Return the full data URI for the zip file
+    return `data:application/zip;base64,${zipContent}`;
+}
+
 function toOverleaf() {
     // Create a form with textarea containing the latex. Then pass to overleaf!
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = 'https://www.overleaf.com/docs';
-    form.target = '_blank'; // Open in new tab
-    form.style.display = 'none';
+    createZipDataURI().then((zipUri) => {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'https://www.overleaf.com/docs';
+        form.target = '_blank'; // Open in new tab
+        form.style.display = 'none';
 
-    const input = document.createElement('textarea');
-    input.name = 'snip';
-    input.value = latext(true); // Return latex rather than copying
-    form.appendChild(input);
+        const input = document.createElement('textarea');
+        input.name = 'snip_uri';
+        input.value = zipUri;
+        form.appendChild(input);
 
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    })
 }
 
 let button = document.getElementById("open-button");

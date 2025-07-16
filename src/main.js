@@ -570,7 +570,6 @@ document.addEventListener('keydown', (event) => {
     } else if (ctrlKey(event) && event.shiftKey && event.key == "O") {
         event.preventDefault();
         toOverleaf();
-        alert("To view figures in Overleaf, download figures first and transfer to Overleaf.");
     } else if (ctrlKey(event) && event.key.toLowerCase() == "o") {
         event.preventDefault();
         openFile();
