@@ -61,18 +61,20 @@ function extractBraceText(cmd, inputText) {
 
 function convertToLatexTable(inputText) {
     // --- Step 0: Find and extract caption ---
-    let labelText = extractBraceText("labell", inputText);
+    let captionText;
+    let labelText;
     let processedInput = inputText;
+    let endIndex = inputText.indexOf("\\end{table}");
 
-    if (labelText) {
-        processedInput = processedInput.replace(`\\labell{${labelText}}`, "");
-    }
+    if (endIndex !== -1) {
+        // There is some stuff after the table. Check for label and caption
+        let afterText = inputText.substring(inputText.lastIndexOf("\\end{table}") + 11);
+        labelText = extractBraceText("labell", afterText);
+        if (labelText) {
+            afterText = afterText.replace(`\\labell{${labelText}}`, "");
+        }
 
-    let captionText = extractBraceText("caption", processedInput);
-
-    if (captionText) {
-        processedInput = processedInput.replace(`\\caption{${captionText}}`, "");
-        captionText = "$" + captionText + "$";
+        captionText = afterText;
     }
 
     const tableContentMatch = processedInput.trim().match(/\\begin\{table\}([\s\S]*?)\\end\{table\}/);
@@ -162,7 +164,10 @@ function convertToLatexTable(inputText) {
                 multiRowSpan = parseInt(downMatch[1]);
             }
             
-            const contentInMath = `$${finalContent}$`;
+            let contentInMath = `$${finalContent}$`;
+            if (finalContent == "") {
+                contentInMath = "";
+            }
             const multiRowContent = `\\multirow{${multiRowSpan}}{*}{${contentInMath}}`;
             
             const leftBorder = needsNoLeftBorder ? 'c' : '|c';
@@ -170,7 +175,7 @@ function convertToLatexTable(inputText) {
             const colSpec = `${leftBorder}${rightBorder}`;
 
             if (rightMatch) {
-                const colSpan = parseInt(rightMatch[1], 10);
+                const colSpan = parseInt(rightMatch[1]);
                 rowCells.push(`\\multicolumn{${colSpan}}{${colSpec}}{${contentInMath}}`);
             } else if (isMultiRow) {
                 if (needsNoLeftBorder || selfHasNoRightBorder) {
@@ -236,7 +241,7 @@ function convertToLatexTable(inputText) {
     let finalOutput = `\\begin{table}[h!]\n\\centering\n`;
     finalOutput += latexOutput;
     if (captionText) {
-        finalOutput += `\n\\caption{${captionText}}`;
+        finalOutput += `\n\\caption{$${captionText}$}`;
     }
 
     if (labelText) {
@@ -249,18 +254,14 @@ function convertToLatexTable(inputText) {
 }
 
 function convertToLatexFigure(inputText) {
-    let afterFigure = inputText.substring(inputText.lastIndexOf("\\end{figure}"));
+    let afterFigure = inputText.substring(inputText.lastIndexOf("\\end{figure}") + 12);
     let labelText = extractBraceText("labell", afterFigure);
 
     if (labelText) {
         afterFigure = afterFigure.replace(`\\labell{${labelText}}`, "");
     }
 
-    let captionText = extractBraceText("caption", afterFigure);
-
-    if (captionText) {
-        captionText = "$" + captionText + "$";
-    }
+    let captionText = afterFigure;
 
     // --- Step 2: Extract the content from within the figure environment ---
     const figureContentMatch = inputText.match(/\\begin\{figure\}([\s\S]*?)\\end\{figure\}/);
@@ -290,39 +291,36 @@ function convertToLatexFigure(inputText) {
             let innerContent = trimmedCell;
             let colspan = 1;
 
-            // Check for \mergeright and extract its content and span
-            const mergeRightMatch = extractBraceText('mergeright', trimmedCell);
+            const mergeRightRegex = /\\mergeright\[(\d+)\]\{(.*)\}/s;
+            const mergeRightMatch = trimmedCell.match(mergeRightRegex);
+
             if (mergeRightMatch) {
-                const spanMatch = trimmedCell.match(/\\mergeright\[(\d+)\]/);
-                if(spanMatch) {
-                    colspan = parseInt(spanMatch[1]);
-                }
-                innerContent = mergeRightMatch;
+                colspan = parseInt(mergeRightMatch[1]);
+                innerContent = mergeRightMatch[2].trim();
             }
             
             const embedMatch = innerContent.match(/\\embed\{image\}\[(\d+)\]/);
             if (!embedMatch) return null;
 
             const imageId = embedMatch[1];
+            const embedCommand = embedMatch[0];
             let finalSubCaption = '';
             let subLabel = '';
 
-            const subCaptionContent = extractBraceText('caption', innerContent);
-            if (subCaptionContent !== null) {
-                const subLabelContent = extractBraceText('labell', subCaptionContent);
+            const captionAndLabelContent = innerContent.replace(embedCommand, '').trim();
+
+            if (captionAndLabelContent) {
+                const subLabelContent = extractBraceText('labell', captionAndLabelContent);
                 if (subLabelContent !== null) {
                     subLabel = subLabelContent;
                     const subLabelCommand = `\\labell{${subLabelContent}}`;
-                    finalSubCaption = subCaptionContent.replace(subLabelCommand, '').trim();
+                    finalSubCaption = captionAndLabelContent.replace(subLabelCommand, '').trim();
                 } else {
-                    finalSubCaption = subCaptionContent;
+                    finalSubCaption = captionAndLabelContent;
                 }
             }
 
-            // Calculate the final width for this specific image
-            const imageWidth = Math.min(baseWidth * colspan, 0.7).toFixed(3);
-
-            // Construct the subfloat string with the dynamic width
+            const imageWidth = Math.min(baseWidth, 0.95).toFixed(3);
             const captionPart = finalSubCaption ? `\\centering $${finalSubCaption}$` : '';
             const labelPart = subLabel ? `\\label{${subLabel}}` : '';
 
@@ -337,7 +335,7 @@ function convertToLatexFigure(inputText) {
     finalOutput += subfloatRowStrings.join('\\\\\n');
     
     if (captionText) {
-        finalOutput += `%\n    \\caption{${captionText}}`;
+        finalOutput += `%\n    \\caption{$${captionText}$}`;
     }
     if (labelText) {
         finalOutput += `%\n    \\label{${labelText}}`;
@@ -400,9 +398,9 @@ function latext(returnLaTeX) {
             output.push("\\begin{" + language + "}");
             output.push(decodeURIComponent(code));
             output.push("\\end{" + language + "}");
-        } else if (line.startsWith("\\begin{table}")) {
+        } else if (line.startsWith("$\\begin{table}")) {
             // This is a table. We have a function for that!
-            output.push(convertToLatexTable(line));
+            output.push(convertToLatexTable(line.substring(1, line.length - 1)));
         } else if (line.startsWith("$\\begin{figure}")) {
             output.push(convertToLatexFigure(line.substring(1, line.length - 1)));
         } else {

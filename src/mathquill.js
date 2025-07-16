@@ -371,9 +371,7 @@ const mathQuillPlugin = new Plugin({
 
             return lines.join("\n")
             .replaceAll(/\$\s*\\begin\{align\}/g, "\\begin{align*}")
-            .replaceAll(/\\end\{align\}\s*\$/g, "\\end{align*}")
-            .replaceAll(/\$\s*\\begin\{table\}/g, "\\begin{table}")
-            .replaceAll(/\\end\{table\}\s*\$/g, "\\end{table}");
+            .replaceAll(/\\end\{align\}\s*\$/g, "\\end{align*}");
             
         },
 
@@ -424,9 +422,7 @@ const mathQuillPlugin = new Plugin({
             // See transformPasted for part 2
             // First add zero-width spaces to make sure empty lines count
             text = text.replaceAll(/\\begin\{align\**\}/g, "$\\begin{align}")
-                       .replaceAll(/\\end\{align\**\}/g, "\\end{align}$")
-                       .replaceAll(/\\begin\{table\}/g, "$\\begin{table}")
-                       .replaceAll(/\\end\{table\}/g, "\\end{table}$");
+                       .replaceAll(/\\end\{align\**\}/g, "\\end{align}$");
 
             let lines = text.split("\n");
             
