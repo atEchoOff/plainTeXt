@@ -30,39 +30,49 @@ function getDocumentText() {
     return mathQuillPlugin.props.clipboardTextSerializer(doc.slice(0));
 }
 
-function convertToLatexTable(inputText) {
-    // --- Step 0: Find and extract caption ---
-    let captionText = null;
-    let processedInput = inputText;
-    const captionStartIndex = inputText.indexOf('\\caption{');
+function extractBraceText(cmd, inputText) {
+    // Find \cmd{content} in inputText, return content. 
+    let braceLevel = 0;
+    let startIndex = inputText.indexOf(`\\${cmd}{`);
 
-    if (captionStartIndex !== -1) {
-        let braceLevel = 0;
-        let captionContentEndIndex = -1;
-        const contentStartIndex = captionStartIndex + '\\caption{'.length;
+    if (startIndex === -1) {
+        return null;
+    }
 
-        for (let i = contentStartIndex; i < inputText.length; i++) {
-            if (inputText[i] === '{') {
-                braceLevel++;
-            } else if (inputText[i] === '}') {
-                if (braceLevel === 0) {
-                    // This is the final closing brace for the caption
-                    captionContentEndIndex = i;
-                    break;
-                } else {
-                    braceLevel--;
-                }
+    let endIndex = -1;
+    const contentStartIndex = startIndex + `\\${cmd}{`.length;
+
+    for (let i = contentStartIndex; i < inputText.length; i++) {
+        if (inputText[i] === '{') {
+            braceLevel++;
+        } else if (inputText[i] === '}') {
+            if (braceLevel === 0) {
+                // This is the final closing brace for the caption
+                endIndex = i;
+                break;
+            } else {
+                braceLevel--;
             }
         }
+    }
 
-        if (captionContentEndIndex !== -1) {
-            const captionCommandEndIndex = captionContentEndIndex + 1;
-            const captionCommand = inputText.substring(captionStartIndex, captionCommandEndIndex);
-            captionText = inputText.substring(contentStartIndex, captionContentEndIndex);
-            
-            // Remove the caption command from the input so it's not processed as cell content
-            processedInput = inputText.replace(captionCommand, '');
-        }
+    return inputText.substring(contentStartIndex, endIndex);
+}
+
+function convertToLatexTable(inputText) {
+    // --- Step 0: Find and extract caption ---
+    let labelText = extractBraceText("labell", inputText);
+    let processedInput = inputText;
+
+    if (labelText) {
+        processedInput = processedInput.replace(`\\labell{${labelText}}`, "");
+    }
+
+    let captionText = extractBraceText("caption", processedInput);
+
+    if (captionText) {
+        processedInput = processedInput.replace(`\\caption{${captionText}}`, "");
+        captionText = "$" + captionText + "$";
     }
 
     const tableContentMatch = processedInput.trim().match(/\\begin\{table\}([\s\S]*?)\\end\{table\}/);
@@ -228,7 +238,111 @@ function convertToLatexTable(inputText) {
     if (captionText) {
         finalOutput += `\n\\caption{${captionText}}`;
     }
+
+    if (labelText) {
+        finalOutput += `\n\\label{${labelText}}`;
+    }
+
     finalOutput += `\n\\end{table}`;
+
+    return finalOutput;
+}
+
+function convertToLatexFigure(inputText) {
+    let afterFigure = inputText.substring(inputText.lastIndexOf("\\end{figure}"));
+    let labelText = extractBraceText("labell", afterFigure);
+
+    if (labelText) {
+        afterFigure = afterFigure.replace(`\\labell{${labelText}}`, "");
+    }
+
+    let captionText = extractBraceText("caption", afterFigure);
+
+    if (captionText) {
+        captionText = "$" + captionText + "$";
+    }
+
+    // --- Step 2: Extract the content from within the figure environment ---
+    const figureContentMatch = inputText.match(/\\begin\{figure\}([\s\S]*?)\\end\{figure\}/);
+
+    const figureContent = figureContentMatch[1];
+
+    // --- Step 3: Process each row and cell to generate subfloats ---
+    const rows = figureContent.split('\\\\');
+    const cellsByRow = rows.map(row => row.split('&').filter(cell => cell.trim()));
+    
+    // Find the widest row in terms of number of cells to determine the base image size
+    const maxImagesInRow = Math.max(0, ...cellsByRow.map(row => row.length));
+
+    if (maxImagesInRow === 0) {
+            console.error("No valid subfigure cells found.");
+        return null;
+    }
+
+    // Calculate a dynamic width for a single-column image
+    const baseWidth = 1 / maxImagesInRow;
+
+    const subfloatRowStrings = cellsByRow.map(row => {
+        return row.map(cell => {
+            const trimmedCell = cell.trim();
+            if (!trimmedCell) return null;
+
+            let innerContent = trimmedCell;
+            let colspan = 1;
+
+            // Check for \mergeright and extract its content and span
+            const mergeRightMatch = extractBraceText('mergeright', trimmedCell);
+            if (mergeRightMatch) {
+                const spanMatch = trimmedCell.match(/\\mergeright\[(\d+)\]/);
+                if(spanMatch) {
+                    colspan = parseInt(spanMatch[1]);
+                }
+                innerContent = mergeRightMatch;
+            }
+            
+            const embedMatch = innerContent.match(/\\embed\{image\}\[(\d+)\]/);
+            if (!embedMatch) return null;
+
+            const imageId = embedMatch[1];
+            let finalSubCaption = '';
+            let subLabel = '';
+
+            const subCaptionContent = extractBraceText('caption', innerContent);
+            if (subCaptionContent !== null) {
+                const subLabelContent = extractBraceText('labell', subCaptionContent);
+                if (subLabelContent !== null) {
+                    subLabel = subLabelContent;
+                    const subLabelCommand = `\\labell{${subLabelContent}}`;
+                    finalSubCaption = subCaptionContent.replace(subLabelCommand, '').trim();
+                } else {
+                    finalSubCaption = subCaptionContent;
+                }
+            }
+
+            // Calculate the final width for this specific image
+            const imageWidth = Math.min(baseWidth * colspan, 0.7).toFixed(3);
+
+            // Construct the subfloat string with the dynamic width
+            const captionPart = finalSubCaption ? `\\centering $${finalSubCaption}$` : '';
+            const labelPart = subLabel ? `\\label{${subLabel}}` : '';
+
+            return `    \\subfloat[${captionPart}]{{\\includegraphics[width=${imageWidth}\\textwidth]{${imageId}.png} }${labelPart}}`;
+
+        }).filter(Boolean).join('%\n');
+    }).filter(rowString => rowString);
+
+
+    // --- Step 4: Assemble the final output ---
+    let finalOutput = `\\begin{figure}%\n    \\centering\n`;
+    finalOutput += subfloatRowStrings.join('\\\\\n');
+    
+    if (captionText) {
+        finalOutput += `%\n    \\caption{${captionText}}`;
+    }
+    if (labelText) {
+        finalOutput += `%\n    \\label{${labelText}}`;
+    }
+    finalOutput += `%\n\\end{figure}`;
 
     return finalOutput;
 }
@@ -266,30 +380,6 @@ function latext(returnLaTeX) {
         } else if (line.startsWith("\\qed{")) {
             // This is a \qed, we want to just replace this with \end{proof}
             output.push("\\end{proof}");
-        } else if (line.startsWith("\\includegraphics")) {
-            // The image is of the form:
-            // \includegraphics{id encoded(caption)}
-            // decoded(caption) is of the form:
-            // \label{labelname} captionText
-            // OR
-            // captionText
-            let p17 = line.substring(17, line.lastIndexOf("}"));
-            let id = p17.substring(0, p17.indexOf(" "));
-            let caption = decodeURIComponent(p17.substring(p17.indexOf(" ") + 1));
-            let label = null;
-            if (caption.startsWith("\\label")) {
-                label = caption.substring(7, caption.indexOf("}"));
-                caption = caption.substring(label.length + 8);
-            }
-
-            output.push("\\begin{figure}[h]");
-            output.push("\\centering");
-            output.push("\\includegraphics[width=0.8\\textwidth]{" + id + "}");
-            output.push("\\caption{" + caption + "}");
-            if (label) {
-                output.push("\\label{" + label + "}");
-            }
-            output.push("\\end{figure}");
         } else if (line.startsWith("\\begin{align*}")
                 || line.startsWith("\\begin{pmatrix}")
                 || line.startsWith("\\begin{cases}")
@@ -313,6 +403,8 @@ function latext(returnLaTeX) {
         } else if (line.startsWith("\\begin{table}")) {
             // This is a table. We have a function for that!
             output.push(convertToLatexTable(line));
+        } else if (line.startsWith("$\\begin{figure}")) {
+            output.push(convertToLatexFigure(line.substring(1, line.length - 1)));
         } else {
             output.push(line);
         }
@@ -333,6 +425,7 @@ function latext(returnLaTeX) {
 \\usepackage{booktabs, multirow}
 \\usepackage{mathtools}
 \\usepackage{graphicx}
+\\usepackage{subfig}
 \\usepackage{hyperref}
 \\usepackage{soul}
 \\usepackage{xcolor,colortbl}
@@ -443,7 +536,7 @@ async function openFile(create) {
         // it will all go away once original paste event completes
         imageData = contents.substring(contents.lastIndexOf("||") + 2);
         contents = contents.substring(0, contents.lastIndexOf("||"));
-        imageData = JSON.parse(imageData);
+        imageSrc = JSON.parse(imageData);
     }
     document.title = file.name; // change window name to file title
 
@@ -462,21 +555,7 @@ async function saveFile() {
     // Get document contents and save
     let contents = getDocumentText();
 
-    // Loop through images and save their contents at the bottom of file
-    let images = document.getElementsByTagName("IMG");
-    let json = {};
-    let index = 0;
-    for (var image of images) {
-        if (image.classList.contains("imagePluginImg")) { // Only count image plugin images
-            json[index.toString()] = {
-                "src": image.src
-            }
-
-            index++;
-        }
-    }
-
-    contents += "||" + JSON.stringify(json);
+    contents += "||" + JSON.stringify(imageSrc);
 
     const writable = await fileHandle.createWritable();
     await writable.write(contents);

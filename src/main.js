@@ -5,11 +5,6 @@ import { history, undo, redo } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { baseKeymap, toggleMark } from "prosemirror-commands";
 import { schema as basicSchema } from "prosemirror-schema-basic";
-import {
-    defaultSettings,
-    imagePlugin,
-    
-} from "prosemirror-image-plugin";
 
 // Helper to run function at next frame.
 // Thanks https://stackoverflow.com/questions/38631302/requestanimationframe-not-waiting-for-the-next-frame
@@ -29,9 +24,6 @@ if (isMac) {
         return event.ctrlKey;
     }
 }
-
-// Setup images
-let imagePluginSettings = {...defaultSettings};
 
 // Prosemirror editor object
 let editor = null;
@@ -63,7 +55,6 @@ const textSpec = {
 // Load in mathquill setup
 // this is a fake command, babel doesnt like to combine files for some reason
 import_from_local("mathquill.js");
-import_from_local("image.js");
 import_from_local("codeblock.js");
 import_from_local("virtualscroll.js");
 
@@ -74,7 +65,6 @@ const schema = new Schema({
         paragraph: paragraphSpec,
         text: textSpec,
         mathquill: mathQuillNodeSpec,
-        image: imageSpec,
         codeBlock: codeBlockSpec
         },
     marks: {
@@ -318,7 +308,6 @@ editor = new EditorView(editorElement, {
                     "Backspace": noSingleZeroWidthSpaces
                 }),
                 keymap(baseKeymap),
-                imagePlugin({...imagePluginSettings}),
                 mathQuillInputRule, // Create mathquill element on ;
                 mathQuillPlugin,
                 virtualScrollPlugin
@@ -525,7 +514,7 @@ document.addEventListener('click', (event) => {
         });
 
         if (!foundTarget) {
-            // Maybe belongs to a figure?
+            // Maybe belongs to a text label?
             $('.label:contains("' + searchText + '")').get().forEach((label) => {
                 // if (label.compareDocumentPosition(event.target) & 0x02) {
                 label.scrollIntoView({

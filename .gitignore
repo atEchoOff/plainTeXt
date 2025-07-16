@@ -2,11 +2,6 @@
 /mqeditor
 /dist
 /public
-# These can be found in node_modules/prosemirror-image-plugin/dist/styles, paste into style
-style/common.css
-style/sideResize.css
-style/withoutResize.css
-style/withResize.css
 style/mathquill.css
 style/pmeditor.css
 style/fonts/*
