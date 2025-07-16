@@ -927,6 +927,14 @@ tableButton.addEventListener("mousedown", (event) => {
     createEnvironment("table");
 });
 
+let figureButton = document.getElementById("create-figure");
+
+figureButton.addEventListener("mousedown", (event) => {
+    event.preventDefault(); // Do not lose focus from mathquill element
+    
+    createEnvironment("figure");
+});
+
 let createColumnButton = document.getElementById("create-column");
 let createRowButton = document.getElementById("create-row");
 let mergeRightButton = document.getElementById("merge-right");

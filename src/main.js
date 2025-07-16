@@ -236,7 +236,7 @@ function applyCommand(state, dispatch) {
             const codeBlockNode = schema.nodes.codeBlock.create({initialize: true, lang: command});
 
             tr = tr.replaceSelectionWith(codeBlockNode);
-        } else if (command === "align" || command === "table") {
+        } else if (command === "align" || command === "table" || command === "figure") {
             tr = tr.delete(indexOfSlash, curPos);
 
             nextFrame(() => {createEnvironment(command)});
@@ -437,6 +437,7 @@ function handleButtonChanges() {
 
         alignButton.disabled = true;
         tableButton.disabled = true;
+        figureButton.disabled = true;
         evalSympyButton.disabled = false;
 
         commandDropDown.disabled = true;
@@ -455,6 +456,7 @@ function handleButtonChanges() {
 
         alignButton.disabled = false;
         tableButton.disabled = false;
+        figureButton.disabled = false;
         evalSympyButton.disabled = true;
 
         commandDropDown.disabled = false;
@@ -475,6 +477,7 @@ function handleButtonChanges() {
         
         alignButton.disabled = true;
         tableButton.disabled = true;
+        figureButton.disabled = true;
         evalSympyButton.disabled = true;
 
         commandDropDown.disabled = true;
