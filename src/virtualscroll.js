@@ -64,7 +64,7 @@ export const virtualScrollPlugin = new Plugin({
         });
 
         // Add <p> tags to intersectionObserver (or remove if destroyed)
-        // Note that this specifically exclused images and code blocks. 
+        // Note that this specifically excludes code blocks. 
         // We will assume there aren't many of them, but they will stay visible.
         const mutationObserver = new MutationObserver((mutations) => {
             mutations.forEach(mutation => {

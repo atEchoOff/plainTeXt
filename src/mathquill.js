@@ -5,6 +5,15 @@ import { Fragment, Slice } from "prosemirror-model";
 // Global mathquill handler
 let MQ = MathQuill.getInterface(2);
 
+imageSrc = {}
+MQ.registerEmbed("image", function(imageId) {
+    return {
+        htmlString: `<span><img src="${imageSrc[imageId]}"/></span>`,
+        text: function() { return 'embedded image'; },
+        latex: function() { return `\\embed{image}[${imageId}]`; }
+    }
+})
+
 function focusMathQuillNode(view, pos, isLeft) {
     // Focus in a mathquill node on a specified side
 
@@ -36,8 +45,6 @@ function fragToTextFrag(fragment) {
         } else if (child.type.name === "codeBlock") {
             const textNode = schema.text("\\" + child.attrs.lang + "{" + encodeURIComponent(child.attrs.code) + "}");
             nodes.push(textNode);
-        } else if (child.type.name === "image") {
-            nodes.push(child.copy(child));
         } else if (child.type.name === "text" && child.marks.length) {
             // Serialize mark as latex
             if (child.marks[0].type.name === "strong") {
@@ -109,7 +116,6 @@ function textToFrag(pastedText) {
     const sectionregex = /(\\section\{((?!\\section\{)[^}]*)\})|/
     const subsectionregex = /(\\subsection\{((?!\\subsection\{)[^}]*)\})|/
     const citeregex = /(\\cite\{((?!\\cite\{)[^}]*)\})|/
-    const imageregex = /(\\includegraphics\{((?!\\includegraphics\{)[^}]*)\})|/
     const theoremregex = /(\\theorem\{((?!\\theorem\{)[^}]*)\})|/
     const qedregex = /(\\qed\{((?!\\qed\{)[^}]*)\})|/
     const labelregex = /(\\label\{((?!\\label\{)[^}]*)\})|/
@@ -132,7 +138,6 @@ function textToFrag(pastedText) {
         sectionregex.source +
         subsectionregex.source +
         citeregex.source +
-        imageregex.source +
         theoremregex.source +
         qedregex.source +
         labelregex.source +
@@ -149,7 +154,7 @@ function textToFrag(pastedText) {
     let nodes = [];
     
     // Loop through matches
-    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, offset) => {
+    pastedText.replace(regex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, offset) => {
         let text = pastedText.slice(lastIndex, offset);
         if (offset > lastIndex) {
             // This is text
@@ -198,79 +203,60 @@ function textToFrag(pastedText) {
 
             lastIndex = offset + match.length;
         } else if (p17) {
-            // This is an image, should be in format
-            // id caption
-            let id = p17.substring(0, p17.indexOf(" "));
-            let caption = p17.substring(p17.indexOf(" ") + 1);
-            if (id in imageData) {
-                // We are currently setting up, and a previous definition already exists for img
-                let imgNode = schema.nodes.image.create({
-                    src:imageData[id]['src'],
-                    title:decodeURIComponent(caption),
-                    aria:''
-                }, textToFrag(decodeURIComponent(caption)));
+            // This is a theorem
+            nodes.push(schema.text(p17, [schema.marks.theorem.create()]));
 
-                nodes.push(imgNode);
-                // The imageData is done for this, we can remove it
-                // If we keep it in, images will reset themselves from global dictionary
-                delete imageData[p17];
-            }
             lastIndex = offset + match.length;
         } else if (p19) {
-            // This is a theorem
-            nodes.push(schema.text(p19, [schema.marks.theorem.create()]));
-
-            lastIndex = offset + match.length;
-        } else if (p21) {
             // This is a theorem
             nodes.push(schema.text(" ", [schema.marks.qed.create()]));
 
             lastIndex = offset + match.length;
-        } else if (p23) {
+        } else if (p21) {
             // This is a label
-            nodes.push(schema.text(p23, [schema.marks.label.create()]));
+            nodes.push(schema.text(p21, [schema.marks.label.create()]));
+
+            lastIndex = offset + match.length;
+        } else if (p23) {
+            // This is a definition
+            nodes.push(schema.text(p23, [schema.marks.definition.create()]));
 
             lastIndex = offset + match.length;
         } else if (p25) {
-            // This is a definition
-            nodes.push(schema.text(p25, [schema.marks.definition.create()]));
+            // This is a proposition
+            nodes.push(schema.text(p25, [schema.marks.proposition.create()]));
 
             lastIndex = offset + match.length;
         } else if (p27) {
-            // This is a proposition
-            nodes.push(schema.text(p27, [schema.marks.proposition.create()]));
+            // This is a corollary
+            nodes.push(schema.text(p27, [schema.marks.corollary.create()]));
 
             lastIndex = offset + match.length;
         } else if (p29) {
-            // This is a corollary
-            nodes.push(schema.text(p29, [schema.marks.corollary.create()]));
+            // This is a lemma
+            nodes.push(schema.text(p29, [schema.marks.lemma.create()]));
 
             lastIndex = offset + match.length;
         } else if (p31) {
-            // This is a lemma
-            nodes.push(schema.text(p31, [schema.marks.lemma.create()]));
+            // This is a remark
+            nodes.push(schema.text(p31, [schema.marks.remark.create()]));
 
             lastIndex = offset + match.length;
         } else if (p33) {
-            // This is a remark
-            nodes.push(schema.text(p33, [schema.marks.remark.create()]));
-
-            lastIndex = offset + match.length;
-        } else if (p35) {
             // This is python code
-            const decoded = decodeURIComponent(p35);
+            const decoded = decodeURIComponent(p33);
             nodes.push(schema.nodes.codeBlock.create({lang: "python", code: decoded}, schema.text(decoded)));
             
+            lastIndex = offset + match.length;
+        } else if (p35) {
+            // This is javascript code
+            const decoded = decodeURIComponent(p35);
+            nodes.push(schema.nodes.codeBlock.create({lang: "javascript", code: decoded}, schema.text(decoded)));
+
             lastIndex = offset + match.length;
         } else if (p37) {
             // This is javascript code
             const decoded = decodeURIComponent(p37);
-            nodes.push(schema.nodes.codeBlock.create({lang: "javascript", code: decoded}, schema.text(decoded)));
-
-            lastIndex = offset + match.length;
-        } else if (p39) {
-            // This is javascript code
-            const decoded = decodeURIComponent(p39);
             nodes.push(schema.nodes.codeBlock.create({lang: "java", code: decoded}, schema.text(decoded)));
 
             lastIndex = offset + match.length;
@@ -368,7 +354,6 @@ const mathQuillPlugin = new Plugin({
             const newContent = fragToTextFrag(slice.content);
 
             let lines = [];
-            let imgCounter = 0;
             for (let node of newContent.content) {
                 let fragment = node.content;
                 
@@ -379,14 +364,6 @@ const mathQuillPlugin = new Plugin({
                 else if (fragment.size == 0) {
                     // Empty fragments are just empty lines
                     lines.push("");
-                } else if (fragment.content && fragment.content.type && fragment.content.type.name === "image") {
-                    // The counter is meaningless unless copying the whole doc
-                    // For now it is needed to save images between sessions
-                    let text = arrayOfTextNodesToText(fragment.content.content.content);
-                    lines.push("\\includegraphics{" + (imgCounter++) + " " + encodeURIComponent(text) + "}");
-                } else if (fragment.type && fragment.type.name === "image") {
-                    let text = arrayOfTextNodesToText(fragment.content.content);
-                    lines.push("\\includegraphics{" + (imgCounter++) + " " + encodeURIComponent(text) + "}");
                 } else {
                     lines.push(fragment.content[0].text);
                 }
@@ -409,27 +386,19 @@ const mathQuillPlugin = new Plugin({
                 // Nodes in slice.content are split by enter
                 // Create a paragraph with each node within this line
                 var newNode;
-                if (node && node.type && node.type.name == "image") {
-                    // This is when a pure image is being pasted
-                    newNode = node;
-                } else if (node.content.content && node.content.content[0] && node.content.content[0].type.name == "image") {
-                    // When a line of pasted text is an image
-                    newNode = node.content.content[0];
-                } else {
-                    let lineText = node.textContent;
+                let lineText = node.textContent;
 
-                    // zero-width space added to make sure empty lines appear on paste
-                    // remove them
-                    if (lineText.endsWith("\u8203")) {
-                        lineText = lineText.substring(0, lineText.length - 1);
-                    }
-                    let ttf = textToFrag(lineText);
-                    if (ttf && ttf[0] && ttf[0].type && (ttf[0].type.name === "image" || ttf[0].type.name === "codeBlock")) {
-                        // Images and codeBlocks dont go into a paragraph
-                        newNode = ttf[0];
-                    } else {
-                        newNode = schema.nodes.paragraph.create({}, Fragment.fromArray(ttf));
-                    }
+                // zero-width space added to make sure empty lines appear on paste
+                // remove them
+                if (lineText.endsWith("\u8203")) {
+                    lineText = lineText.substring(0, lineText.length - 1);
+                }
+                let ttf = textToFrag(lineText);
+                if (ttf && ttf[0] && ttf[0].type && ttf[0].type.name === "codeBlock") {
+                    // codeBlocks dont go into a paragraph
+                    newNode = ttf[0];
+                } else {
+                    newNode = schema.nodes.paragraph.create({}, Fragment.fromArray(ttf));
                 }
                 nodes.push(newNode);
             });
@@ -618,7 +587,24 @@ class MathQuillNodeView {
 
     handlePaste(e) {
         // Manually write pasted text
-        this.mathField.write(e.clipboardData.getData("text"));
+        const items = Array.from(e.clipboardData.items);
+        const imageItem = items.find(item => item.type.startsWith('image/'));
+
+        if (imageItem) {
+            const imageFile = imageItem.getAsFile();
+
+            var fr = new FileReader();
+            var mathField = this.mathField;
+            fr.onload = function () {
+                var imageIdx = Object.keys(imageSrc).length;
+                imageSrc[imageIdx] = fr.result;
+
+                nextFrame(() => {mathField.write(`\\embed{image}[${imageIdx}]`)});
+            }
+            fr.readAsDataURL(imageFile);
+        } else {
+            this.mathField.write(e.clipboardData.getData("text"));
+        }
     }
 }
 

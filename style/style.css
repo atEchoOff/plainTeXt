@@ -57,7 +57,7 @@ p:has(.mq-align) {
     padding-bottom:30px;
 }
 
-p:has(.mq-table) {
+p:has(.mq-table,.mq-figure) {
     text-align:center;
 }
 
