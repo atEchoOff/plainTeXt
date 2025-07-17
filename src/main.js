@@ -708,15 +708,15 @@ for (let commandButton of commandButtons) {
     })
 }
 
-const latextGitHub = document.getElementById("latext-github");
-const latextDownload = document.getElementById("latext-download");
+const plainTeXtGitHub = document.getElementById("plainTeXt-github");
+const plainTeXtDownload = document.getElementById("plainTeXt-download");
 const mqeditorGitHub = document.getElementById("mqeditor-github");
 
-latextGitHub.addEventListener("click", () => {
+plainTeXtGitHub.addEventListener("click", () => {
     window.open("https://github.com/atEchoOff/plainTeXt", '_blank').focus();
 });
 
-latextDownload.addEventListener("click", () => {
+plainTeXtDownload.addEventListener("click", () => {
     window.open("https://github.com/atEchoOff/plainTeXt/releases", '_blank').focus();
 });
 

@@ -1,6 +1,6 @@
 # [plainTeXt](https://github.com/atEchoOff/plainTeXt)
 
-
+***Please*** do not pronounce this "plain-tekt" like you pronounce "TeX" from "LaTeX" or I will use whatever legal action is necessary to stop you from doing so. 
 
 by [Brian Christner](https://github.com/atEchoOff)
 
