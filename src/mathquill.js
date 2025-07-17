@@ -690,28 +690,28 @@ function scrollCursorIntoView() {
         return;
     }
 
-    // Place parent element completely in view
-    const cursorParent = cursor.parentElement;
-    if (!cursorParent) {
-        console.log('Cursor parent element not found');
-        return;
-    }
+    const margin = 20;
+    const element = cursor.parentElement;
 
-    // Get bounding rectangle
-    const cursorParentRect = cursorParent.getBoundingClientRect();
-    
-    // Check for vertical overflow
-    const isTopOverflow = cursorParentRect.top < 0;
-    const isBottomOverflow = cursorParentRect.bottom > window.innerHeight;
+    const editorRect = editorElement.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
 
-    if (isTopOverflow || isBottomOverflow) {
-        console.log('Scrolling to mq-cursor');
-        
-        cursorParent.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'nearest'
-        });
+    const visibleBottom = editorRect.top + editorElement.clientHeight;
+
+    // Scrollbar aware
+    const isPartiallyOutOfView = elementRect.top < editorRect.top || elementRect.bottom > visibleBottom;
+
+    if (isPartiallyOutOfView) {
+        if (elementRect.bottom > visibleBottom) {
+            // Out of view on bottom, scroll down past margin
+            const scrollAmount = elementRect.bottom - visibleBottom + margin;
+            editorElement.scrollTop += scrollAmount;
+
+        } else if (elementRect.top < editorRect.top) {
+            // Out of view on top, scroll up past margin
+            const scrollAmount = editorRect.top - elementRect.top + margin;
+            editorElement.scrollTop -= scrollAmount;
+        }
     }
 }
 
