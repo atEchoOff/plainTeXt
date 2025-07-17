@@ -1,7 +1,7 @@
 mkdir -p dist
 python3 utils/load_into.py src/main.js > dist/output.js
 ./node_modules/.bin/esbuild dist/output.js --bundle --minify --outfile=dist/output.js --allow-overwrite
-cp mqeditor/build/mathquill.js dist/mathquill.js
+cp mqeditor/build/mathquill.min.js dist/mathquill.js
 cp mqeditor/build/mathquill.css style/mathquill.css
 cp -r ./node_modules/@pyscript/core/dist dist/pyscript/
 cp mqeditor/build/fonts/Symbola.ttf style/fonts
