@@ -713,11 +713,11 @@ const latextDownload = document.getElementById("latext-download");
 const mqeditorGitHub = document.getElementById("mqeditor-github");
 
 latextGitHub.addEventListener("click", () => {
-    window.open("https://github.com/atEchoOff/MathScript", '_blank').focus();
+    window.open("https://github.com/atEchoOff/plainTeXt", '_blank').focus();
 });
 
 latextDownload.addEventListener("click", () => {
-    window.open("https://github.com/atEchoOff/MathScript/releases", '_blank').focus();
+    window.open("https://github.com/atEchoOff/plainTeXt/releases", '_blank').focus();
 });
 
 mqeditorGitHub.addEventListener("click", () => {
