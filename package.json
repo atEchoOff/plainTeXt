@@ -1,6 +1,6 @@
 {
-  "name": "mathscript",
-  "version": "1.1.0",
+  "name": "plaintext",
+  "version": "1.0.0",
   "main": "electron.js",
   "author": "Brian Christner <at.echo.off@outlook.com>",
   "scripts": {
@@ -9,8 +9,8 @@
     "build": "electron-builder"
   },
   "build": {
-    "appId": "com.atech.mathscript",
-    "productName": "MathScript",
+    "appId": "com.atech.plaintext",
+    "productName": "plainTeXt",
     "files": [
       "dist/*.js",
       "dist/pyscript/*",
@@ -43,13 +43,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/atEchoOff/MathScript.git"
+    "url": "git+https://github.com/atEchoOff/plaintext.git"
   },
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/atEchoOff/MathScript/issues"
+    "url": "https://github.com/atEchoOff/plaintext/issues"
   },
-  "homepage": "https://github.com/atEchoOff/MathScript#readme",
+  "homepage": "https://github.com/atEchoOff/plaintext#readme",
   "description": "",
   "devDependencies": {
     "browserify": "^17.0.1",
