@@ -5,6 +5,7 @@ import {
 import { python } from "@codemirror/lang-python"
 import { javascript } from "@codemirror/lang-javascript"
 import { java } from "@codemirror/lang-java"
+import { bibtex } from "codemirror-lang-bibtex"
 import { defaultKeymap, indentWithTab } from "@codemirror/commands"
 import { syntaxHighlighting, defaultHighlightStyle } from "@codemirror/language"
 
@@ -18,6 +19,8 @@ function getLanguage(lang_string) {
         return javascript();
     } else if (lang_string == "java") {
         return java();
+    } else if (lang_string == "bibtex") {
+        return bibtex();
     }
 }
 

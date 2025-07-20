@@ -49,8 +49,8 @@ Please, if you see fit, feel free to use, download, modify, and share this repo!
     - \subsection
 - Support for labeling and referencing, with links between:
     - \label
-    - \eqref
-    - \cite
+    - \eqref. `Ctrl+Click` will scroll to corresponding \label. 
+    - \cite. `Ctrl+Click` will either link to url from bibtex, or scroll to bibtex block.
 - Support for styled theorems, lemma, etc:
     - \theorem
     - \lemma
@@ -63,6 +63,7 @@ Please, if you see fit, feel free to use, download, modify, and share this repo!
     - \python
     - \java
     - \javascript
+    - \bibtex. Resulting references will save in `references.bib` upon export to Overleaf.
 - Support for **align** environment:
     - \align
     - `Shift+DownArrow` to create a new row.
@@ -93,5 +94,10 @@ Please, if you see fit, feel free to use, download, modify, and share this repo!
 - Math screenshots
     - `Ctrl+Shift+P` to download and copy screenshot of mathblock to keyboard.
     - Easy sharing of math. 
+- BibTeX
+    - Support for \bibtex environment, which builds over the document to create `references.bib`
+    - `Ctrl+Click` on a \cite will open url if available in BibTeX entry
+    - `Ctrl+Click` on a \cite will scroll to bibtex entry otherwise
 - Dark mode
     - Because its a required feature for any and all private projects
+    - Dark mode will persist between sessions

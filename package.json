@@ -63,6 +63,7 @@
     "@codemirror/lang-python": "^6.2.1",
     "@pyscript/core": "^0.6.60",
     "codemirror": "^6.0.2",
+    "codemirror-lang-bibtex": "github:citedrive/lang-bibtex",
     "prosemirror-commands": "^1.7.0",
     "prosemirror-history": "^1.4.1",
     "prosemirror-inputrules": "^1.5.0",

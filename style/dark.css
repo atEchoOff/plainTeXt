@@ -16,7 +16,8 @@ body.dark {
     color: white !important;
 }
 
-.dark .reference:hover:not(.selected-mark):not(.label)::after {
+.dark .reference:hover:not(.selected-mark):not(.label)::after,
+.dark .citation:hover:not(.selected-mark):not(.label)::after {
     color: white;
     background-color: black;
 }

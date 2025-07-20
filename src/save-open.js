@@ -362,9 +362,11 @@ function convertToLatexFigure(inputText) {
 
 function latext(returnLaTeX) {
     // Convert document text to latex for pasting into overleaf
-    // If returnLaTeX === true, return string instead of copying
+    // If returnLaTeX === true, return docString and bibtex instead of copying
     let lines = getDocumentText().split("\n");
     let output = []; // Array of each line
+    let bibtex = ""; // Save our bibtex file
+
     for (var line of lines) {
         // Conditionally handle each line
         if (line.startsWith("\\theorem{")
@@ -413,6 +415,10 @@ function latext(returnLaTeX) {
             output.push("\\begin{" + language + "}");
             output.push(decodeURIComponent(code));
             output.push("\\end{" + language + "}");
+        } else if (line.startsWith("\\bibtex")) {
+            // This is a bibtex entry. We may add it to the bibtex.
+            const entry = decodeURIComponent(line.substring(line.indexOf("{") + 1, line.lastIndexOf("}")));
+            bibtex += entry + "\n";
         } else if (line.startsWith("$\\begin{table}")) {
             // This is a table. We have a function for that!
             output.push(convertToLatexTable(line.substring(1, line.length - 1)));
@@ -517,12 +523,14 @@ function latext(returnLaTeX) {
 
     ` + docString + `
 
+\\bibliographystyle{plain}
+\\bibliography{references}
 \\end{document}
     `;
 
     // copy to clipboard
     if (returnLaTeX === true) { // Objects are true...
-        return docString;
+        return [docString, bibtex];
     } else {
         navigator.clipboard.writeText(docString).then(() => {}, () => {});
     }
@@ -581,8 +589,10 @@ async function saveFile() {
 async function createZipDataURI() {
     const zip = new JSZip();
 
-    // Add main.tex file
-    zip.file('main.tex', latext(true));
+    // Add main.tex file and references
+    const [docString, bibtex] = latext(true);
+    zip.file('main.tex', docString);
+    zip.file('references.bib', bibtex);
 
     // Loop through the imageSrc dictionary to add images
     for (const id in imageSrc) {

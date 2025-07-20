@@ -88,7 +88,8 @@ p {
     content: ")";
 }
 
-.reference:hover:not(.selected-mark):not(.label)::after {
+.reference:hover:not(.selected-mark):not(.label)::after,
+.citation:hover:not(.selected-mark):not(.label)::after {
     content: "Ctrl+click to follow";
     position:absolute;
     top:100%;
@@ -98,7 +99,8 @@ p {
     color: black;
 }
 
-.reference:hover:not(.selected-mark):not(.label)::before {
+.reference:hover:not(.selected-mark):not(.label)::before,
+.citation:hover:not(.selected-mark):not(.label)::before {
     content: "";
 }
 
@@ -112,6 +114,8 @@ p {
 }
 
 .citation {
+    cursor: pointer;
+    position: relative;
     color: rgb(255, 72, 102);
 }
 

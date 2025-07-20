@@ -229,7 +229,7 @@ function applyCommand(state, dispatch) {
         } else if (command === "remark") {
             tr = tr.delete(indexOfSlash, curPos);
             tr = tr.setStoredMarks([schema.marks.remark.create()]);
-        } else if (command === "python" || command === "javascript" || command === "java") {
+        } else if (command === "python" || command === "javascript" || command === "java" || command === "bibtex") {
             tr = tr.delete(indexOfSlash, curPos);
             
             // Set initialize to true to focus on creation
@@ -242,7 +242,7 @@ function applyCommand(state, dispatch) {
             nextFrame(() => {createEnvironment(command)});
         }
 
-        if (command !== "python" && command !== "javascript" && command !== "java") {
+        if (command !== "python" && command !== "javascript" && command !== "java" && command !== "bibtex") {
             createNewMark = true; // We trigger zero width space creation to make visible
         }
 
@@ -496,7 +496,7 @@ document.addEventListener('selectionchange', () => {
 });
 
 document.addEventListener('click', (event) => {
-    if (ctrlKey(event) && event.target.classList.contains('reference') || event.target.classList.contains('mq-reference')) {
+    if (ctrlKey(event) && event.target.classList.contains('reference')) {
         // Handle moving to label for reference
         let foundTarget = false;
         let searchText = event.target.innerText.replaceAll("\u200b", ""); // silly mathquill, no zero-width spaces please!
@@ -541,6 +541,42 @@ document.addEventListener('click', (event) => {
                 });
                 // }
             });
+        }
+    } else if (ctrlKey(event) && event.target.classList.contains('citation')) {
+        // Check bibtex entries somewhere for a url to jump to...
+        // Get all bibtex
+        const bibtexes = document.querySelectorAll("div[data-language='BibTeX']");
+        const searchText = event.target.innerText.replaceAll("\u200b", "");
+        for (var bibtex of bibtexes) {
+            const bibtexEntries = bibtex.innerText.split("@");
+            // Loop through this bibtext's entries:
+            for (var entry of bibtexEntries) {
+                // Check if this entry has the article title the same of the search text
+                const articleName = entry.substring(entry.indexOf("{") + 1, entry.indexOf(","));
+                if (articleName.trim() == searchText.trim()) {
+                    // We found a matching entry! Now find the URL and jump to it
+                    if (entry.includes("url")) {
+                        // Get the url line
+                        let url = entry.substring(entry.indexOf("url") + 3);
+                        url = url.substring(url.indexOf("{") + 1, url.indexOf("}"));
+
+                        // url should contain the exact url since urls cant contain { or }
+                        // so jump!
+                        window.open(url, '_blank').focus();
+                        
+                        return;
+                    } else {
+                        // There is no url... so instead just scroll this bibtex into view
+                        bibtex.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'nearest',
+                            inline: 'nearest'
+                        });
+
+                        return;
+                    }
+                }
+            }
         }
     } else {
         // This is just a click, handle mark decorations
