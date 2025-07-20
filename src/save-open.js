@@ -168,6 +168,14 @@ function convertToLatexTable(inputText) {
             if (finalContent == "") {
                 contentInMath = "";
             }
+
+            if (finalContent.startsWith("\\text{") && finalContent.endsWith("}")) {
+                const innerTextLiterally = finalContent.substring(6, finalContent.length - 1);
+                if (!innerTextLiterally.includes("}")) {
+                    // This is just text, so we dont need $\text{...}$ around it.
+                    contentInMath = innerTextLiterally;
+                }
+            }
             const multiRowContent = `\\multirow{${multiRowSpan}}{*}{${contentInMath}}`;
             
             const leftBorder = needsNoLeftBorder ? 'c' : '|c';
@@ -196,8 +204,8 @@ function convertToLatexTable(inputText) {
     }
 
     // --- Step 4: Assemble the final table string with intelligent horizontal lines ---
-    const columnFormat = `{|${'c|'.repeat(maxCols)}}`;
-    let latexOutput = `\\begin{tabular}{${columnFormat}}\n`;
+    const columnFormat = `{|${'C|'.repeat(maxCols)}}`;
+    let latexOutput = `\\begin{tabulary}{\\textwidth}{${columnFormat}}\n`;
     latexOutput += `\\hline\n`; // Top border
 
     for (let r = 0; r < numRows; r++) {
@@ -235,7 +243,7 @@ function convertToLatexTable(inputText) {
             latexOutput += '\n\\hline\n';
         }
     }
-    latexOutput += `\\end{tabular}`;
+    latexOutput += `\\end{tabulary}`;
     
     // --- Step 5: Wrap in table environment and add caption ---
     let finalOutput = `\\begin{table}[h!]\n\\centering\n`;
@@ -423,6 +431,7 @@ function latext(returnLaTeX) {
 \\usepackage{booktabs, multirow}
 \\usepackage{mathtools}
 \\usepackage{graphicx}
+\\usepackage{tabulary}
 \\usepackage{subfig}
 \\usepackage{hyperref}
 \\usepackage{soul}
