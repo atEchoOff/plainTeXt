@@ -59,6 +59,23 @@ function extractBraceText(cmd, inputText) {
     return inputText.substring(contentStartIndex, endIndex);
 }
 
+function toMathNotation(cellText) {
+    // Convert cellText to a math block that can appear in a figure/caption/table
+    if (cellText == "") {
+        return "";
+    }
+
+    if (cellText.startsWith("\\text{") && cellText.endsWith("}")) {
+        const innerTextLiterally = cellText.substring(6, cellText.length - 1);
+        if (!innerTextLiterally.includes("}")) {
+            // This is just text, so we dont need $\text{...}$ around it.
+            return innerTextLiterally;
+        }
+    }
+
+    return `$${cellText}$`;
+}
+
 function convertToLatexTable(inputText) {
     // --- Step 0: Find and extract caption ---
     let captionText;
@@ -164,18 +181,8 @@ function convertToLatexTable(inputText) {
                 multiRowSpan = parseInt(downMatch[1]);
             }
             
-            let contentInMath = `$${finalContent}$`;
-            if (finalContent == "") {
-                contentInMath = "";
-            }
+            let contentInMath = toMathNotation(finalContent);
 
-            if (finalContent.startsWith("\\text{") && finalContent.endsWith("}")) {
-                const innerTextLiterally = finalContent.substring(6, finalContent.length - 1);
-                if (!innerTextLiterally.includes("}")) {
-                    // This is just text, so we dont need $\text{...}$ around it.
-                    contentInMath = innerTextLiterally;
-                }
-            }
             const multiRowContent = `\\multirow{${multiRowSpan}}{*}{${contentInMath}}`;
             
             const leftBorder = needsNoLeftBorder ? 'c' : '|c';
@@ -249,7 +256,7 @@ function convertToLatexTable(inputText) {
     let finalOutput = `\\begin{table}[h!]\n\\centering\n`;
     finalOutput += latexOutput;
     if (captionText) {
-        finalOutput += `\n\\caption{$${captionText}$}`;
+        finalOutput += `\n\\caption{${toMathNotation(captionText)}}`;
     }
 
     if (labelText) {
@@ -329,7 +336,7 @@ function convertToLatexFigure(inputText) {
             }
 
             const imageWidth = Math.min(baseWidth, 0.95).toFixed(3);
-            const captionPart = finalSubCaption ? `\\centering $${finalSubCaption}$` : '';
+            const captionPart = finalSubCaption ? `\\centering ${toMathNotation(finalSubCaption)}` : '';
             const labelPart = subLabel ? `\\label{${subLabel}}` : '';
 
             return `    \\subfloat[${captionPart}]{{\\includegraphics[width=${imageWidth}\\textwidth]{${imageId}.png} }${labelPart}}`;
@@ -343,7 +350,7 @@ function convertToLatexFigure(inputText) {
     finalOutput += subfloatRowStrings.join('\\\\\n');
     
     if (captionText) {
-        finalOutput += `%\n    \\caption{$${captionText}$}`;
+        finalOutput += `%\n    \\caption{${toMathNotation(captionText)}}`;
     }
     if (labelText) {
         finalOutput += `%\n    \\label{${labelText}}`;
