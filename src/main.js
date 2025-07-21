@@ -608,7 +608,7 @@ document.addEventListener('keydown', (event) => {
         saveFile();
     } else if (ctrlKey(event) && event.shiftKey && event.key == "O") {
         event.preventDefault();
-        toOverleaf();
+        toPDF();
     } else if (ctrlKey(event) && event.key.toLowerCase() == "o") {
         event.preventDefault();
         openFile();
@@ -621,6 +621,7 @@ document.addEventListener('keydown', (event) => {
     scrollCursorIntoView();
 })
 
+import_from_local("upload-to-latex-server.js");
 import_from_local("save-open.js");
 
 function isElectron() {

@@ -4,7 +4,7 @@
 
 by [Brian Christner](https://github.com/atEchoOff)
 
-*plainTeXt* is a WYSIWYG LaTeX editor for taking readable notes, sketching, or drafting quickly. It is built with [ProseMirror](https://github.com/prosemirror) and my custom fork of [MathQuill](https://github.com/mathquill), [MathQuill](https://github.com/atEchoOff/MathQuill), which adds features such as matrices, figures, and tables, adds convenient shorthand, and fixes some small bugs. It has built-in and locally-run [SymPy](https://github.com/sympy/sympy) for evaluating complicated expressions, a math screenshot tool, and direct export to Overleaf available. 
+*plainTeXt* is a WYSIWYG LaTeX editor for taking readable notes, sketching, or drafting quickly. It is built with [ProseMirror](https://github.com/prosemirror) and my custom fork of [MathQuill](https://github.com/mathquill), [MathQuill](https://github.com/atEchoOff/MathQuill), which adds features such as matrices, figures, and tables, adds convenient shorthand, and fixes some small bugs. It has built-in and locally-run [SymPy](https://github.com/sympy/sympy) for evaluating complicated expressions, a math screenshot tool, and direct export to PDF available through my open source [LaTeX compilation server](https://github.com/atEchoOff/LaTeXServer).
 
 I have personally used a prototype of *plainTeXt* for 6 years, through my undergrad at the University of Virginia and in grad school at Rice University. Over this time, I have recieved many requests to publish my repo, but since everything was contained in one hellishly large HTML file, with substantial and unapologetic use of javascripts famous [execCommand](https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand), I did not. With the help of prosemirror, the resulting *plainTeXt* product is much more attractive.
 
@@ -31,7 +31,7 @@ Please, if you see fit, feel free to use, download, modify, and share this repo!
     - Undo (`ctrl+z`) and redo (`ctrl+y`) also works.
     - Virtual scrolling for smooth experience.
     - Helpful top menu to perform all features (outside of MathQuill commands)
-- Direct export to OverLeaf with `Ctrl+Shift+o`
+- Direct export to PDF with `Ctrl+Shift+o`
     - or copy pure LaTeX code to clipboard with `Ctrl+Shift+L`. 
 - Local filesave (*no* servers are involved, purposefully)
     - `Ctrl+o` to open
@@ -63,7 +63,7 @@ Please, if you see fit, feel free to use, download, modify, and share this repo!
     - \python
     - \java
     - \javascript
-    - \bibtex. Resulting references will save in `references.bib` upon export to Overleaf.
+    - \bibtex. Resulting references will save in `references.bib` upon export to PDF.
 - Support for **align** environment:
     - \align
     - `Shift+DownArrow` to create a new row.

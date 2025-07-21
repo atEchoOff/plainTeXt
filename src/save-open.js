@@ -356,7 +356,7 @@ function convertToLatexFigure(inputText) {
 }
 
 function latext(returnLaTeX) {
-    // Convert document text to latex for pasting into overleaf
+    // Convert document text to latex for pasting into PDF
     // If returnLaTeX === true, return docString and bibtex instead of copying
     let lines = getDocumentText().split("\n");
     let output = []; // Array of each line
@@ -582,7 +582,7 @@ async function saveFile() {
     console.log("Saved!");
 }
 
-async function createZipDataURI() {
+async function createZipBlob() {
     const zip = new JSZip();
 
     // Add main.tex file and references
@@ -602,39 +602,59 @@ async function createZipDataURI() {
         zip.file(`${id}.png`, base64Data, { base64: true });
     }
 
-    // Generate the complete zip file as a base64 string
-    const zipContent = await zip.generateAsync({ type: 'base64' });
-
-    // Return the full data URI for the zip file
-    return `data:application/zip;base64,${zipContent}`;
+    return await zip.generateAsync({
+        type: "blob",
+        compression: "DEFLATE",
+        compressionOptions: {
+            level: 9
+        }
+    });
 }
 
-function toOverleaf() {
-    // Create a form with textarea containing the latex. Then pass to overleaf!
-    createZipDataURI().then((zipUri) => {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = 'https://www.overleaf.com/docs';
-        form.target = '_blank'; // Open in new tab
-        form.style.display = 'none';
-
-        const input = document.createElement('textarea');
-        input.name = 'snip_uri';
-        input.value = zipUri;
-        form.appendChild(input);
-
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
+async function toPDF() {
+    // Pass zip to temporary compilation server. FIXME until a better solution is found, I have exposed a public LaTeX compilation server, available at http://plaintext.bchristner.com/compile
+    compileLatex(await createZipBlob(), 'http://plaintext.bchristner.com/compile')
+    .then(pdfBlob => {
+        // Create a URL for the blob and trigger a download
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'output.pdf';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
     })
+    .catch(error => {
+        console.error("An error occurred:", error);
+        alert(error.message);
+    });
+}
+
+async function toZip() {
+    // Download zip from zip blob!
+    const zipBlob = await createZipBlob();
+
+    const url = URL.createObjectURL(zipBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'output.zip';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
 }
 
 let button = document.getElementById("open-button");
 button.addEventListener("click", () => openFile());
 
-let overleaf = document.getElementById("overleaf");
+let toPDFButton = document.getElementById("PDF-button");
 
-overleaf.addEventListener('click', toOverleaf);
+toPDFButton.addEventListener('click', toPDF);
+
+let toZipButton = document.getElementById("zip-button");
+
+toZipButton.addEventListener("click", toZip);
 
 let copyButton = document.getElementById("copy-latex");
 
