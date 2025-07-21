@@ -26,8 +26,9 @@ function triggerPasteEvent(contents) {
 function getDocumentText() {
     // Simulate Ctrl+A Ctrl+C
     const doc = editor.state.doc;
-
-    return mathQuillPlugin.props.clipboardTextSerializer(doc.slice(0));
+    //                                                                 v this is not used
+    //                                                                         v escape dangerous characters
+    return mathQuillPlugin.props.clipboardTextSerializer(doc.slice(0), editor, true);
 }
 
 function extractBraceText(cmd, inputText) {
@@ -65,15 +66,9 @@ function toMathNotation(cellText) {
         return "";
     }
 
-    if (cellText.startsWith("\\text{") && cellText.endsWith("}")) {
-        const innerTextLiterally = cellText.substring(6, cellText.length - 1);
-        if (!innerTextLiterally.includes("}")) {
-            // This is just text, so we dont need $\text{...}$ around it.
-            return innerTextLiterally;
-        }
-    }
+    cellText = cellText.replaceAll(/\\text\{([^}]+)\}/g, "$$$1$$");
 
-    return `$${cellText}$`;
+    return `$${cellText}$`.replaceAll("$$", "");
 }
 
 function convertToLatexTable(inputText) {

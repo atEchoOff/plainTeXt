@@ -384,10 +384,12 @@ const mathQuillPlugin = new Plugin({
             return new Slice(newContent, slice.openStart, slice.openEnd);
         },
 
-        clipboardTextSerializer(slice) {
+        clipboardTextSerializer(slice, _, makeSafe) {
             // Handle how the text on the clipboard looks after copying
             // This is necessary because transformCopied will double empty spaces
-            const newContent = fragToTextFrag(slice.content);
+            // If makeSafe, escape characters. This ONLY happens when exporting to latex.
+
+            const newContent = fragToTextFrag(slice.content, makeSafe);
 
             let lines = [];
             for (let node of newContent.content) {
