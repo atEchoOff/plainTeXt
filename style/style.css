@@ -16,6 +16,10 @@
     font-size: 20px;
 }
 
+#editor .mq-math-mode {
+    font-size: 20px;
+}
+
 #editor p {
     /* Stop extra margin between lines in prosemirror */
     margin: 0;

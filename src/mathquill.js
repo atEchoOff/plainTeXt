@@ -337,7 +337,7 @@ function verticalAlign(mathquillElement) {
     // Line up the mathquill container so that the aligned text is centered vertically
     let root = rootBlock.getBoundingClientRect();
     let container = mathquillElement.getBoundingClientRect();
-    mathquillElement.style.verticalAlign = (root.top - container.top)/2 + (root.bottom - container.bottom)/2 + 2 + "px"
+    mathquillElement.style.verticalAlign = (root.top - container.top)/2 + (root.bottom - container.bottom)/2 + 1 + "px"
 }
 
 const mathQuillPlugin = new Plugin({
