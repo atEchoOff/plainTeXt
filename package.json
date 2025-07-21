@@ -1,6 +1,6 @@
 {
   "name": "plaintext",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "electron.js",
   "author": "Brian Christner <at.echo.off@outlook.com>",
   "scripts": {
