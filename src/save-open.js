@@ -476,6 +476,7 @@ function latext(returnLaTeX) {
 \\DeclareMathOperator{\\Var}{Var}
 
 \\usepackage{amsfonts,amssymb,amsthm}
+\\newcommand{\\var}[1]{#1}
 \\renewcommand{\\aligned}[1]{&#1}
 \\newcommand{\\labell}[1]{\\addtocounter{equation}{1}\\tag{\\theequation}\\label{#1}}
 \\DeclareMathOperator{\\diag}{diag}
