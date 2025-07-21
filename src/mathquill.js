@@ -34,8 +34,37 @@ function focusMathQuillNode(view, pos, isLeft) {
     }
 }
 
-function fragToTextFrag(fragment) {
+function escapeLaTeX(latex, makeSafe) {
+    // Escape dangerous characters like \ and & from text
+    if (makeSafe) {
+        return latex.replaceAll("\\", "\\\\")
+                    .replaceAll("&", "\\&")
+                    .replaceAll("#", "\\#")
+                    .replaceAll("%", "\\%")
+                    .replaceAll("$", "\\$")
+                    .replaceAll("_", "\\_")
+                    .replaceAll("{", "\\{")
+                    .replaceAll("}", "\\}");
+    } else {
+        return latex;
+    }
+}
+
+function unescapeLaTeX(latex) {
+    // Unescape dangerous characters from text.
+    return latex.replaceAll("\\\\", "\\")
+                .replaceAll("\\&", "&")
+                .replaceAll("\\#", "#")
+                .replaceAll("\\%", "%")
+                .replaceAll("\\$", "$")
+                .replaceAll("\\_", "_")
+                .replaceAll("\\{", "{")
+                .replaceAll("\\}", "}");
+}
+
+function fragToTextFrag(fragment, makeSafe) {
     // Convert fragment to latex form for copy
+    // If makeSafe, escape latex
     let nodes = [];
     fragment.forEach((child) => {
         if (child.type.name === "mathquill") {
@@ -47,55 +76,61 @@ function fragToTextFrag(fragment) {
             nodes.push(textNode);
         } else if (child.type.name === "text" && child.marks.length) {
             // Serialize mark as latex
+            const safeLaTeX = escapeLaTeX(child.text, makeSafe);
             if (child.marks[0].type.name === "strong") {
-                const textNode = schema.text("\\textbf{" + child.text + "}");
+                const textNode = schema.text("\\textbf{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "em") {
-                const textNode = schema.text("\\textit{" + child.text + "}");
+                const textNode = schema.text("\\textit{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "link") {
-                const textNode = schema.text("\\eqref{" + child.text + "}");
+                const textNode = schema.text("\\eqref{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "code") {
-                const textNode = schema.text("\\texttt{" + child.text + "}");
+                const textNode = schema.text("\\texttt{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "section") {
-                const textNode = schema.text("\\section{" + child.text + "}");
+                const textNode = schema.text("\\section{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "subsection") {
-                const textNode = schema.text("\\subsection{" + child.text + "}");
+                const textNode = schema.text("\\subsection{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "citation") {
-                const textNode = schema.text("\\cite{" + child.text + "}");
+                const textNode = schema.text("\\cite{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "theorem") {
-                const textNode = schema.text("\\theorem{" + child.text + "}");
+                const textNode = schema.text("\\theorem{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "qed") {
                 const textNode = schema.text("\\qed{ }");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "label") {
-                const textNode = schema.text("\\label{" + child.text + "}");
+                const textNode = schema.text("\\label{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "definition") {
-                const textNode = schema.text("\\definition{" + child.text + "}");
+                const textNode = schema.text("\\definition{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "proposition") {
-                const textNode = schema.text("\\proposition{" + child.text + "}");
+                const textNode = schema.text("\\proposition{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "corollary") {
-                const textNode = schema.text("\\corollary{" + child.text + "}");
+                const textNode = schema.text("\\corollary{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "lemma") {
-                const textNode = schema.text("\\lemma{" + child.text + "}");
+                const textNode = schema.text("\\lemma{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "remark") {
-                const textNode = schema.text("\\remark{" + child.text + "}");
+                const textNode = schema.text("\\remark{" + safeLaTeX + "}");
                 nodes.push(textNode);
             }
         } else if (child.content) {
             // For non-leaf nodes, recursively transform their content
-            nodes.push(child.copy(fragToTextFrag(child.content)));
+            let childCopy = child;
+            if (child.type.name === "text") {
+                // Escape dangerous characters (if necessary)
+                childCopy = schema.text(escapeLaTeX(child.text, makeSafe));
+            }
+            nodes.push(childCopy.copy(fragToTextFrag(child.content, makeSafe)));
         } else {
             // Leaf nodes that are not MathQuill nodes are unchanged
             nodes.push(child);
@@ -160,7 +195,7 @@ function textToFrag(pastedText) {
         let text = pastedText.slice(lastIndex, offset);
         if (offset > lastIndex) {
             // This is text
-            nodes.push(schema.text(text));
+            nodes.push(schema.text(unescapeLaTeX(text)));
         }
 
         if (p1) {
@@ -171,42 +206,42 @@ function textToFrag(pastedText) {
             lastIndex = offset + match.length;
         } else if (p3) {
             // This is bold text
-            nodes.push(schema.text(p3, [schema.marks.strong.create()]));
+            nodes.push(schema.text(unescapeLaTeX(p3), [schema.marks.strong.create()]));
 
             lastIndex = offset + match.length;
         } else if (p5) {
             // This is italics text
-            nodes.push(schema.text(p5, [schema.marks.em.create()]));
+            nodes.push(schema.text(unescapeLaTeX(p5), [schema.marks.em.create()]));
 
             lastIndex = offset + match.length;
         } else if (p7) {
             // This is a link
-            nodes.push(schema.text(p7, [schema.marks.link.create()]));
+            nodes.push(schema.text(unescapeLaTeX(p7), [schema.marks.link.create()]));
 
             lastIndex = offset + match.length;
         } else if (p9) {
             // This is a link
-            nodes.push(schema.text(p9, [schema.marks.code.create()]));
+            nodes.push(schema.text(unescapeLaTeX(p9), [schema.marks.code.create()]));
 
             lastIndex = offset + match.length;
         } else if (p11) {
             // This is a section
-            nodes.push(schema.text(p11, [schema.marks.section.create()]));
+            nodes.push(schema.text(unescapeLaTeX(p11), [schema.marks.section.create()]));
 
             lastIndex = offset + match.length;
         } else if (p13) {
             // This is a subsection
-            nodes.push(schema.text(p13, [schema.marks.subsection.create()]));
+            nodes.push(schema.text(unescapeLaTeX(p13), [schema.marks.subsection.create()]));
 
             lastIndex = offset + match.length;
         } else if (p15) {
             // This is a citation
-            nodes.push(schema.text(p15, [schema.marks.citation.create()]));
+            nodes.push(schema.text(unescapeLaTeX(p15), [schema.marks.citation.create()]));
 
             lastIndex = offset + match.length;
         } else if (p17) {
             // This is a theorem
-            nodes.push(schema.text(p17, [schema.marks.theorem.create()]));
+            nodes.push(schema.text(unescapeLaTeX(p17), [schema.marks.theorem.create()]));
 
             lastIndex = offset + match.length;
         } else if (p19) {
@@ -216,32 +251,32 @@ function textToFrag(pastedText) {
             lastIndex = offset + match.length;
         } else if (p21) {
             // This is a label
-            nodes.push(schema.text(p21, [schema.marks.label.create()]));
+            nodes.push(schema.text(unescapeLaTeX(p21), [schema.marks.label.create()]));
 
             lastIndex = offset + match.length;
         } else if (p23) {
             // This is a definition
-            nodes.push(schema.text(p23, [schema.marks.definition.create()]));
+            nodes.push(schema.text(unescapeLaTeX(p23), [schema.marks.definition.create()]));
 
             lastIndex = offset + match.length;
         } else if (p25) {
             // This is a proposition
-            nodes.push(schema.text(p25, [schema.marks.proposition.create()]));
+            nodes.push(schema.text(unescapeLaTeX(p25), [schema.marks.proposition.create()]));
 
             lastIndex = offset + match.length;
         } else if (p27) {
             // This is a corollary
-            nodes.push(schema.text(p27, [schema.marks.corollary.create()]));
+            nodes.push(schema.text(unescapeLaTeX(p27), [schema.marks.corollary.create()]));
 
             lastIndex = offset + match.length;
         } else if (p29) {
             // This is a lemma
-            nodes.push(schema.text(p29, [schema.marks.lemma.create()]));
+            nodes.push(schema.text(unescapeLaTeX(p29), [schema.marks.lemma.create()]));
 
             lastIndex = offset + match.length;
         } else if (p31) {
             // This is a remark
-            nodes.push(schema.text(p31, [schema.marks.remark.create()]));
+            nodes.push(schema.text(unescapeLaTeX(p31), [schema.marks.remark.create()]));
 
             lastIndex = offset + match.length;
         } else if (p33) {
@@ -273,7 +308,7 @@ function textToFrag(pastedText) {
     
     // Add any remaining text
     if (lastIndex < pastedText.length) {
-        nodes.push(schema.text(pastedText.slice(lastIndex)));
+        nodes.push(schema.text(unescapeLaTeX(pastedText.slice(lastIndex))));
     }
 
     return nodes;
@@ -303,13 +338,6 @@ function verticalAlign(mathquillElement) {
     let root = rootBlock.getBoundingClientRect();
     let container = mathquillElement.getBoundingClientRect();
     mathquillElement.style.verticalAlign = (root.top - container.top)/2 + (root.bottom - container.bottom)/2 + 2 + "px"
-}
-
-function arrayOfTextNodesToText(textNodes) {
-    // Take an array of textnodes, combine their text
-    let textFrag = fragToTextFrag(textNodes);
-    
-    return textFrag.content[0].text;
 }
 
 const mathQuillPlugin = new Plugin({
@@ -350,8 +378,8 @@ const mathQuillPlugin = new Plugin({
         },
 
         transformCopied(slice) {
-            // Copy elements right from editor
-            const newContent = fragToTextFrag(slice.content);
+            // Copy elements right from editor, make text safe
+            const newContent = fragToTextFrag(slice.content, true);
 
             return new Slice(newContent, slice.openStart, slice.openEnd);
         },
