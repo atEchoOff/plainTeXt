@@ -419,6 +419,9 @@ function latext(returnLaTeX) {
             output.push(convertToLatexTable(line.substring(1, line.length - 1)));
         } else if (line.startsWith("$\\begin{figure}")) {
             output.push(convertToLatexFigure(line.substring(1, line.length - 1)));
+        } else if (line.startsWith("\\section") || line.startsWith("\\subsection")) {
+            const sectionTitle = line.substring(line.indexOf("{") + 1, line.indexOf("}"));
+            output.push(line + `\\label{${sectionTitle}}`)
         } else {
             output.push(line);
         }
