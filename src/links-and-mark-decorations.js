@@ -147,7 +147,7 @@ function decorateMark(element, checkLinks, tryLabels, trySections, tryTheorems, 
     // If dictionaries exist, this is just for linking/unlinking, so ignore selection stuff.
     // If checkLinks, also check if it should be linked
 
-    if (element) {
+    if (element && element.classList) {
         // If textNode, we are in a math element. Do not decorate based on selections.
         const textNode = element.classList.contains("mq-text-mode");
 
