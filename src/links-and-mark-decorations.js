@@ -105,7 +105,7 @@ function isUnlinked(element, tryLabels, trySections, tryTheorems, tryCitations, 
     // Pass (potential) dictionaries to matchingLabel/matchingCitation.
     // If textOverride, apply textOverride as innerHTML instead. Useful for comma separated links
 
-    const innerText = textOverride ? textOverride : element.innerHTML;
+    const innerText = textOverride ? textOverride : element.textContent;
 
     if (innerText.includes(",")) {
         // Return unlinked if ANY element is unlinked
@@ -141,14 +141,18 @@ function decorateLinkedMarks() {
 }
 
 // Valid tagNames for mark tags (FIXME this needs changing if a mark tag changes...)
-const markTags = new Set(["H2", "H3", "CODE", "EM", "STRONG", "A"]);
+const markTags = new Set(["H2", "H3", "CODE", "EM", "STRONG", "A", "SPAN"]);
 
 function decorateMark(element, checkLinks, tryLabels, trySections, tryTheorems, tryCitations) {
     // If dictionaries exist, this is just for linking/unlinking, so ignore selection stuff.
     // If checkLinks, also check if it should be linked
+
+    // If textNode, we are in a math element. Do not decorate based on selections.
+    const textNode = element.classList.contains("mq-text-mode");
+
     if (element) {
         // First, unselect selected elements (copy so that .remove() doesnt mess up loop)
-        if (!tryLabels) {
+        if (!tryLabels && !textNode) {
             const selectedElements = [...document.getElementsByClassName("selected-mark")];
             for (let selectedElement of selectedElements) {
                 // If the mark has *just* a zero width space, it is invisible and unusable. Delete it!
@@ -162,6 +166,14 @@ function decorateMark(element, checkLinks, tryLabels, trySections, tryTheorems, 
 
         // Select selected element (only if editor.state.storedMarks is null i.e. we are in a mark)
         if (markTags.has(element.tagName) && !!!editor.state.storedMarks) {
+            if (element.tagName === "SPAN" && !element.classList.contains("reference")) {
+                // Decorate each reference in this math span
+                element.parentElement.querySelectorAll(".reference").forEach((reference) => {
+                    decorateMark(reference, checkLinks, tryLabels, trySections, tryTheorems, tryCitations);
+                })
+
+                return;
+            }
             let addUnlinked = false;
 
             if (checkLinks) {
@@ -176,7 +188,7 @@ function decorateMark(element, checkLinks, tryLabels, trySections, tryTheorems, 
                     element.classList.remove("unlinked-mark");
                 }
 
-                if (!tryLabels) {
+                if (!tryLabels && !textNode) {
                     element.classList.add("selected-mark");
                 }
             })
