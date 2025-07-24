@@ -1,0 +1,94 @@
+.darkgreen #editor {
+    background-image: linear-gradient(145deg, #081f18, #12352a);
+    border-color: #00796B; /* Material Design Green 700 */
+    color: #e0f2f1; /* Light Teal */
+}
+
+body.darkgreen {
+    background-color: #081410; /* Very Dark Green */
+}
+
+.darkgreen .reference {
+    color: #82b1ff; /* Material Design Light Blue A200 */
+}
+
+.darkgreen .label {
+    color: white !important;
+}
+
+.darkgreen .reference:hover:not(.selected-mark):not(.label)::after,
+.darkgreen .citation:hover:not(.selected-mark):not(.label)::after {
+    color: #e0f2f1;
+    background-color: #081410;
+}
+
+.darkgreen .selected-mark::after {
+    color: #4db6ac; /* Material Design Teal 300 */
+}
+
+.darkgreen .py-script-loader {
+    color: #081410;
+    background-color: rgba(100, 221, 23, 0.5); /* Translucent Light Green */
+}
+
+.darkgreen #plainTeXt-dropdown {
+    background-color: #00695C; /* Material Design Green 800 */
+}
+
+.darkgreen button {
+    color: #a7ffeb; /* Material Design Teal A100 */
+}
+
+.darkgreen button[title]::after {
+    background-color: #00251a; /* Very Dark Green */
+    border-color: #26a69a; /* Material Design Teal 400 */
+}
+
+.darkgreen button:hover {
+    background-color: #00251a;
+    border-color: #64ffda; /* Material Design Teal A200 */
+}
+
+.darkgreen button:disabled, .darkgreen button[disabled] {
+    color: #4a7c7a; /* Muted Teal */
+    background-color: #00251a;
+}
+
+.darkgreen .tab-button {
+    background-color: #0c1f1a;
+    border-color: #00695C;
+}
+
+.darkgreen .dropdown-content {
+    background-color: #0c1f1a;
+    border-color: #00695C;
+}
+
+.darkgreen #button-container {
+    background-color: #0c1f1a;
+    border-bottom-color: #00695C;
+}
+
+.darkgreen .cm-lineNumbers {
+    background-color: #103028;
+    color: #80cbc4; /* Material Design Teal 200 */
+}
+
+#dark-green-button {
+    background-color: #0c1f1a;
+    border-color: #00695C;
+    color: #a7ffeb;
+}
+
+.screenshotting {
+    /* For purposes of taking screenshots of mathquill elements in the darkgreen theme */
+    color: black;
+}
+
+.darkgreen .sympy-success {
+    background-color: rgb(20, 80, 60); /* Dark Teal */
+}
+
+.darkgreen .sympy-fail {
+    background-color: rgb(120, 20, 20); /* Darker Red */
+}

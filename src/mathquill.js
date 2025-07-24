@@ -846,17 +846,20 @@ function evaluateSympy(mathField, dom) {
                 mathField.write("=" + result);
             }
 
-            // Make field green
-            dom.style.backgroundColor = "rgb(189, 255, 192)";
+            // Visually mark success
+            dom.classList.add("sympy-success");
         } catch (error) {
-            // Something bad happened. Make field red. 
-            dom.style.backgroundColor = "rgb(255, 189, 189)";
+            // Something bad happened. Visually mark failure
+            dom.classList.add("sympy-fail");
 
             console.error(error);
         }
 
         // Restore color after 3 seconds
-        setTimeout(() => {dom.style.backgroundColor = ""}, 3000);
+        setTimeout(() => {
+            dom.classList.remove("sympy-success");
+            dom.classList.remove("sympy-fail");
+        }, 3000);
     })
 }
 

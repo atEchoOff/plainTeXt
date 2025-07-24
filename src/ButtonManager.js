@@ -17,7 +17,12 @@ class ButtonManager {
         this.plainTeXtGitHub = document.getElementById("plainTeXt-github");
         this.plainTeXtDownload = document.getElementById("plainTeXt-download");
         this.mqeditorGitHub = document.getElementById("mqeditor-github");
+
+        this.lightModeButton = document.getElementById("light-mode-button");
         this.darkModeButton = document.getElementById("dark-mode-button");
+        this.darkRedButton = document.getElementById("dark-red-button");
+        this.darkGreenButton = document.getElementById("dark-green-button");
+        this.darkBlueButton = document.getElementById("dark-blue-button");
 
         this.mathButton = document.getElementById("create-math-button");
         this.screenshotMathButton = document.getElementById("screenshot-math");
@@ -59,7 +64,11 @@ class ButtonManager {
             window.open("https://github.com/atEchoOff/mqeditor", "_blank").focus();
         })
 
-        this.darkModeButton.addEventListener("click", toggleDarkMode);
+        this.lightModeButton.addEventListener("click", () => {setTheme("")});
+        this.darkModeButton.addEventListener("click", () => {setTheme("dark")});
+        this.darkRedButton.addEventListener("click", () => {setTheme("darkred")});
+        this.darkGreenButton.addEventListener("click", () => {setTheme("darkgreen")});
+        this.darkBlueButton.addEventListener("click", () => {setTheme("darkblue")});
 
         this.mathButton.addEventListener('mousedown', (event) => {
             event.preventDefault(); // Dont lose focus on editor

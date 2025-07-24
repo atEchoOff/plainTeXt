@@ -512,17 +512,16 @@ import_from_local("cas.py");
     });
 }
 
-function toggleDarkMode() {
-    if (document.body.classList.contains("dark")) {
-        document.body.classList.remove("dark");
-        localStorage.setItem("darkmode", false)
-    } else {
-        document.body.classList.add("dark");
-        localStorage.setItem("darkmode", true);
+function setTheme(theme) {
+    if (typeof theme === "string") {
+        document.body.className = theme;
+        localStorage.setItem("theme", theme);
     }
 }
 
-// Set darkmode to applicable item
-if (localStorage.getItem("darkmode") === "true") {
-    document.body.classList.add("dark");
+if (!localStorage.hasOwnProperty("theme")) {
+    // My favorite :)
+    localStorage.setItem("theme", "darkblue");
 }
+
+setTheme(localStorage.getItem("theme"));

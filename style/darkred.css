@@ -1,0 +1,94 @@
+.darkred #editor {
+    background-image: linear-gradient(145deg, #1f0808, #401515);
+    border-color: #8B0000; /* Dark Red */
+    color: #ffdede; /* Light Pinkish Red */
+}
+
+body.darkred {
+    background-color: #140404; /* Very Dark Red */
+}
+
+.darkred .reference {
+    color: #9cb0e0; /* Muted Blue */
+}
+
+.darkred .label {
+    color: white !important;
+}
+
+.darkred .reference:hover:not(.selected-mark):not(.label)::after,
+.darkred .citation:hover:not(.selected-mark):not(.label)::after {
+    color: #ffdede;
+    background-color: #140404;
+}
+
+.darkred .selected-mark::after {
+    color: #9a4f4f; /* Muted Red */
+}
+
+.darkred .py-script-loader {
+    color: #140404;
+    background-color: rgba(209, 72, 72, 0.5); /* Translucent Red */
+}
+
+.darkred #plainTeXt-dropdown {
+    background-color: #800000; /* Maroon */
+}
+
+.darkred button {
+    color: #d4a3a3; /* Muted Light Red */
+}
+
+.darkred button[title]::after {
+    background-color: #2d0d0d; /* Very Dark Red */
+    border-color: #9f3a3a; /* Muted Red */
+}
+
+.darkred button:hover {
+    background-color: #2d0d0d;
+    border-color: #b25050; /* Muted Lighter Red */
+}
+
+.darkred button:disabled, .darkred button[disabled] {
+    color: #7c4a4a; /* Muted Dark Red */
+    background-color: #2d0d0d;
+}
+
+.darkred .tab-button {
+    background-color: #1c0707;
+    border-color: #800000;
+}
+
+.darkred .dropdown-content {
+    background-color: #1c0707;
+    border-color: #800000;
+}
+
+.darkred #button-container {
+    background-color: #1c0707;
+    border-bottom-color: #800000;
+}
+
+.darkred .cm-lineNumbers {
+    background-color: #2d1010;
+    color: #d8a7a7;
+}
+
+#dark-red-button {
+    background-color: #1c0707;
+    border-color: #800000;
+    color: #d4a3a3;
+}
+
+.screenshotting {
+    /* For purposes of taking screenshots of mathquill elements in the darkred theme */
+    color: black;
+}
+
+.darkred .sympy-success {
+    background-color: rgb(20, 80, 60); /* Dark Teal */
+}
+
+.darkred .sympy-fail {
+    background-color: rgb(120, 20, 20); /* Darker Red */
+}

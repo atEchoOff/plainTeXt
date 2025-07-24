@@ -1,0 +1,94 @@
+.darkblue #editor {
+    background-image: linear-gradient(145deg, #0b2027, #1c3a3e);
+    border-color: #48d1cc; /* Medium Turquoise */
+    color: #e0f7fa; /* Light Cyan */
+}
+
+body.darkblue {
+    background-color: #040f10; /* Very Dark Teal */
+}
+
+.darkblue .reference {
+    color: #66fcf1; /* Bright Cyan */
+}
+
+.darkblue .label {
+    color: white !important;
+}
+
+.darkblue .reference:hover:not(.selected-mark):not(.label)::after,
+.darkblue .citation:hover:not(.selected-mark):not(.label)::after {
+    color: #e0f7fa;
+    background-color: #040f10;
+}
+
+.darkblue .selected-mark::after {
+    color: #4f9a94; /* Muted Turquoise */
+}
+
+.darkblue .py-script-loader {
+    color: #040f10;
+    background-color: rgba(72, 209, 204, 0.5); /* Translucent Turquoise */
+}
+
+.darkblue #plainTeXt-dropdown {
+    background-color: #008080; /* Teal */
+}
+
+.darkblue button {
+    color: #88c0be; /* Muted Light Cyan */
+}
+
+.darkblue button[title]::after {
+    background-color: #0d2c2d; /* Very Dark Teal */
+    border-color: #3a9f9a; /* Muted Turquoise */
+}
+
+.darkblue button:hover {
+    background-color: #0d2c2d;
+    border-color: #50b2ad; /* Muted Lighter Turquoise */
+}
+
+.darkblue button:disabled, .darkblue button[disabled] {
+    color: #4a7c7a; /* Muted Teal */
+    background-color: #0d2c2d;
+}
+
+.darkblue .tab-button {
+    background-color: #071a1c;
+    border-color: #008080;
+}
+
+.darkblue .dropdown-content {
+    background-color: #071a1c;
+    border-color: #008080;
+}
+
+.darkblue #button-container {
+    background-color: #071a1c;
+    border-bottom-color: #008080;
+}
+
+.darkblue .cm-lineNumbers {
+    background-color: #102a2d;
+    color: #a7d8d5;
+}
+
+#dark-blue-button {
+    background-color: #071a1c;
+    border-color: #008080;
+    color: #88c0be;
+}
+
+.screenshotting {
+    /* For purposes of taking screenshots of mathquill elements in the darkblue theme */
+    color: black;
+}
+
+.darkblue .sympy-success {
+    background-color: rgb(20, 80, 60); /* Dark Teal */
+}
+
+.darkblue .sympy-fail {
+    background-color: rgb(120, 50, 20); /* Dark Amber */
+}
