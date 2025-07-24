@@ -814,27 +814,6 @@ function downloadMathQuillScreenShot(mathQuillElement) {
     });
 }
 
-let mathButton = document.getElementById("create-math-button");
-
-mathButton.addEventListener('mousedown', (event) => {
-    event.preventDefault(); // Dont lose focus on editor
-    if (document.activeElement.tagName == "TEXTAREA") {
-        // We are in a mathquill element, get out
-        exitCurrentMathQuillNode();
-    } else {
-        // Create a new mathquill element and focus!
-        placeMathQuillNodeAtSelection();
-    }
-});
-
-let clearSympyButton = document.getElementById("clear-sympy");
-
-clearSympyButton.addEventListener('mousedown', (event) => {
-    loadPyScript().then(() => {
-        clear_sympy();
-    });
-});
-
 function evaluateSympy(mathField, dom) {
     // Evaluate sympy on current mathfield, also given corresponding dom element
 
@@ -881,38 +860,6 @@ function evaluateSympy(mathField, dom) {
     })
 }
 
-let evalSympyButton = document.getElementById("eval-sympy");
-
-evalSympyButton.addEventListener("mousedown", (event) => {
-    event.preventDefault(); // Do not lose focus from mathquill element
-
-    try {
-        // First, get mathquill element
-        const mathquillElement = document.activeElement.parentElement.parentElement;
-
-        if (mathquillElement && mathquillElement.tagName == "SPAN") {
-            // We assume this is a mathquill element
-            evaluateSympy(MQ(mathquillElement), mathquillElement);
-        }
-    } catch(_) {}
-})
-
-let screenshotMathButton = document.getElementById("screenshot-math");
-
-screenshotMathButton.addEventListener('mousedown', (event) => {
-    event.preventDefault(); // Do not lose focus from mathquill element
-
-    try {
-        // First, get mathquill element
-        const mathquillElement = document.activeElement.parentElement.parentElement;
-
-        if (mathquillElement && mathquillElement.tagName == "SPAN") {
-            // We assume this is a mathquill element
-            downloadMathQuillScreenShot(mathquillElement);
-        }
-    } catch(_) {}
-});
-
 function createEnvironment(environment) {
     let deepestElement = getDeepestElementAtSelection();
 
@@ -945,37 +892,6 @@ function createEnvironment(environment) {
     })
 }
 
-let alignButton = document.getElementById("create-align");
-
-alignButton.addEventListener("mousedown", (event) => {
-    event.preventDefault(); // Do not lose focus from mathquill element
-    
-    createEnvironment("align");
-});
-
-let tableButton = document.getElementById("create-table");
-
-tableButton.addEventListener("mousedown", (event) => {
-    event.preventDefault(); // Do not lose focus from mathquill element
-    
-    createEnvironment("table");
-});
-
-let figureButton = document.getElementById("create-figure");
-
-figureButton.addEventListener("mousedown", (event) => {
-    event.preventDefault(); // Do not lose focus from mathquill element
-    
-    createEnvironment("figure");
-});
-
-let createColumnButton = document.getElementById("create-column");
-let createRowButton = document.getElementById("create-row");
-let mergeRightButton = document.getElementById("merge-right");
-let mergeDownButton = document.getElementById("merge-down");
-let noBottomBorderButton = document.getElementById("nbb");
-let noRightBorderButton = document.getElementById("nrb");
-
 function executeKeystrokeInSelectedMQ(keystroke, cmd=false) {
     const mathquillElement = document.activeElement.parentElement.parentElement;
 
@@ -989,39 +905,3 @@ function executeKeystrokeInSelectedMQ(keystroke, cmd=false) {
         }
     }
 }
-
-createColumnButton.addEventListener("mousedown", (event) => {
-    event.preventDefault(); // Do not lose focus from mathquill element
-
-    executeKeystrokeInSelectedMQ("Shift-Right");
-})
-
-createRowButton.addEventListener("mousedown", (event) => {
-    event.preventDefault(); // Do not lose focus from mathquill element
-
-    executeKeystrokeInSelectedMQ("Shift-Down");
-})
-
-mergeRightButton.addEventListener("mousedown", (event) => {
-    event.preventDefault(); // Do not lose focus from mathquill element
-
-    executeKeystrokeInSelectedMQ("Ctrl-Right");
-})
-
-mergeDownButton.addEventListener("mousedown", (event) => {
-    event.preventDefault(); // Do not lose focus from mathquill element
-
-    executeKeystrokeInSelectedMQ("Ctrl-Down");
-})
-
-noBottomBorderButton.addEventListener("mousedown", (event) => {
-    event.preventDefault(); // You get it now
-
-    executeKeystrokeInSelectedMQ("\\nbb", cmd=true);
-})
-
-noRightBorderButton.addEventListener("mousedown", (event) => {
-    event.preventDefault();
-
-    executeKeystrokeInSelectedMQ("\\nrb", cmd=true);
-})

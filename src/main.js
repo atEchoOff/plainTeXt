@@ -58,6 +58,7 @@ import_from_local("mathquill.js");
 import_from_local("codeblock.js");
 import_from_local("virtualscroll.js");
 import_from_local("links-and-mark-decorations.js");
+import_from_local("ButtonManager.js");
 
 const schema = new Schema({
     nodes: {
@@ -373,88 +374,12 @@ function getDeepestElementAtSelection() {
     return null;
 }
 
-const commandDropDown = document.getElementById("command-drop-down");
-
-function handleButtonChanges() {
-    // Activate or deactivate buttons
-    if (document.activeElement && document.activeElement.tagName == "TEXTAREA") {
-        // We are in a mathquill element
-        screenshotMathButton.disabled = false;
-        if (document.activeElement.parentElement.parentElement.querySelector(".mq-matrix .mq-hasCursor")) {
-            // There is a focused matrix/table/gridlike thing! Allow grid movement.
-            createColumnButton.disabled = false;
-            createRowButton.disabled = false;
-            mergeRightButton.disabled = false;
-            mergeDownButton.disabled = false;
-            noBottomBorderButton.disabled = false;
-            noRightBorderButton.disabled = false;
-        } else {
-            createColumnButton.disabled = true;
-            createRowButton.disabled = true;
-            mergeRightButton.disabled = true;
-            mergeDownButton.disabled = true;
-            noBottomBorderButton.disabled = true;
-            noRightBorderButton.disabled = true;
-        }
-
-        mathButton.disabled = false;
-        mathButton.textContent = "Exit Math";
-
-        alignButton.disabled = true;
-        tableButton.disabled = true;
-        figureButton.disabled = true;
-        evalSympyButton.disabled = false;
-
-        commandDropDown.disabled = true;
-    } else {
-        // We are out of mathquill element
-        screenshotMathButton.disabled = true;
-        createColumnButton.disabled = true;
-        createRowButton.disabled = true;
-        mergeRightButton.disabled = true;
-        mergeDownButton.disabled = true;
-        noBottomBorderButton.disabled = true;
-        noRightBorderButton.disabled = true;
-
-        mathButton.disabled = false;
-        mathButton.textContent = "Create Math";
-
-        alignButton.disabled = false;
-        tableButton.disabled = false;
-        figureButton.disabled = false;
-        evalSympyButton.disabled = true;
-
-        commandDropDown.disabled = false;
-    }
-
-    if (document.activeElement && document.activeElement.className == "cm-content") {
-        // We are in a code block. 
-        screenshotMathButton.disabled = true;
-        createColumnButton.disabled = true;
-        createRowButton.disabled = true;
-        mergeRightButton.disabled = true;
-        mergeDownButton.disabled = true;
-        noBottomBorderButton.disabled = true;
-        noRightBorderButton.disabled = true;
-
-        mathButton.disabled = true;
-        mathButton.textContent = "Create Math";
-        
-        alignButton.disabled = true;
-        tableButton.disabled = true;
-        figureButton.disabled = true;
-        evalSympyButton.disabled = true;
-
-        commandDropDown.disabled = true;
-    }
-}
-
 document.addEventListener('selectionchange', () => {
     // Highlight mathquill elements if needed
     nextFrame(refreshHighlights); 
     
     // Handle any button changes based on mathquill focus
-    nextFrame(handleButtonChanges);
+    nextFrame(() => {buttonManager.handleButtonChanges()});
 });
 
 document.addEventListener('keydown', (event) => {
@@ -475,9 +400,12 @@ document.addEventListener('keydown', (event) => {
     } else if (ctrlKey(event) && event.shiftKey && event.key == "L") {
         event.preventDefault();
         latext(); // Will copy result to clipboard
-        alert("LaTeX copied to clipboard!");
     }
 
+    if (event.key.length == 1) {
+        // The user typed, decorate file button since file state changed
+        buttonManager.decorateFileButton(false);
+    }
     scrollCursorIntoView();
 })
 
@@ -568,7 +496,7 @@ import_from_local("cas.py");
                         console.log("PyScript loaded")
                         clearInterval(interval);
 
-                        clearSympyButton.disabled = false; // Enable sympy button
+                        buttonManager.enableSymPyButton();
                         
                         // Remove the loader element
                         loaderElement.remove();
@@ -584,46 +512,7 @@ import_from_local("cas.py");
     });
 }
 
-const loadPyScriptButton = document.getElementById("load-pyscript");
-
-loadPyScriptButton.addEventListener('click', loadPyScript);
-
-// Make command buttons functional
-let commandButtons = document.getElementsByClassName("command-button");
-
-for (let commandButton of commandButtons) {
-    const command = commandButton.textContent;
-    commandButton.addEventListener("mousedown", (event) => {
-        event.preventDefault(); // Do not change selection
-
-        // Type command, then apply command and decorate!
-        typeText(command);
-        nextFrame(() => {
-            applyCommand(editor.state, editor.dispatch);
-            decorateAndCreateIfNeeded();
-        })
-    })
-}
-
-const plainTeXtGitHub = document.getElementById("plainTeXt-github");
-const plainTeXtDownload = document.getElementById("plainTeXt-download");
-const mqeditorGitHub = document.getElementById("mqeditor-github");
-
-plainTeXtGitHub.addEventListener("click", () => {
-    window.open("https://github.com/atEchoOff/plainTeXt", '_blank').focus();
-});
-
-plainTeXtDownload.addEventListener("click", () => {
-    window.open("https://github.com/atEchoOff/plainTeXt/releases", '_blank').focus();
-});
-
-mqeditorGitHub.addEventListener("click", () => {
-    window.open("https://github.com/atEchoOff/mqeditor", "_blank").focus();
-})
-
-const darkModeButton = document.getElementById("dark-mode-button");
-
-darkModeButton.addEventListener("click", () => {
+function toggleDarkMode() {
     if (document.body.classList.contains("dark")) {
         document.body.classList.remove("dark");
         localStorage.setItem("darkmode", false)
@@ -631,7 +520,7 @@ darkModeButton.addEventListener("click", () => {
         document.body.classList.add("dark");
         localStorage.setItem("darkmode", true);
     }
-});
+}
 
 // Set darkmode to applicable item
 if (localStorage.getItem("darkmode") === "true") {

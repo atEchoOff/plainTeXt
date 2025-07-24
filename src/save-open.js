@@ -532,6 +532,7 @@ function latext(returnLaTeX) {
         return [docString, bibtex];
     } else {
         navigator.clipboard.writeText(docString).then(() => {}, () => {});
+        alert("LaTeX copied to clipboard!");
     }
 }
 
@@ -580,13 +581,19 @@ async function saveFile() {
 
     contents += "||" + JSON.stringify(imageSrc);
 
-    const writable = await fileHandle.createWritable();
-    await writable.write(contents);
-    await writable.close();
+    try {
+        const writable = await fileHandle.createWritable();
+        await writable.write(contents);
+        await writable.close();
+
+        console.log("Saved!");
+
+        buttonManager.decorateFileButton(true);
+    } catch (_) {
+        console.warn("Document not open, cannot save");
+    }
 
     decorateLinkedMarks();
-
-    console.log("Saved!");
 }
 
 async function createZipBlob() {
@@ -651,33 +658,6 @@ async function toZip() {
     window.URL.revokeObjectURL(url);
     a.remove();
 }
-
-let button = document.getElementById("open-button");
-button.addEventListener("click", () => openFile());
-
-let toPDFButton = document.getElementById("PDF-button");
-
-toPDFButton.addEventListener('click', toPDF);
-
-let toZipButton = document.getElementById("zip-button");
-
-toZipButton.addEventListener("click", toZip);
-
-let copyButton = document.getElementById("copy-latex");
-
-// Copy latex when clicking this button
-copyButton.addEventListener('click', latext);
-
-let saveButton = document.getElementById("save-button");
-
-saveButton.addEventListener('click', saveFile);
-
-let newButton = document.getElementById("new-button");
-
-newButton.addEventListener('click', () => {
-    // Open a new tab/window
-    window.open(window.location.href, '_blank').focus();
-})
 
 // Occasionally save the file if applicable
 window.setInterval(function() {
