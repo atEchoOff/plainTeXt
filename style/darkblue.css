@@ -92,3 +92,10 @@ body.darkblue {
 .darkblue .sympy-fail {
     background-color: rgb(120, 50, 20); /* Dark Amber */
 }
+
+.darkblue .mq-table {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+.darkblue .mq-table td {
+    background-color: #2a5058; /* Lighter than editor background */
+}

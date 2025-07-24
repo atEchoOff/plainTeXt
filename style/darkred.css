@@ -92,3 +92,10 @@ body.darkred {
 .darkred .sympy-fail {
     background-color: rgb(120, 20, 20); /* Darker Red */
 }
+
+.darkred .mq-table {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+.darkred .mq-table td {
+    background-color: #502a2a; /* Lighter than editor background */
+}
