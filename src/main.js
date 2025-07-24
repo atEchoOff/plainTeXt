@@ -57,6 +57,7 @@ const textSpec = {
 import_from_local("mathquill.js");
 import_from_local("codeblock.js");
 import_from_local("virtualscroll.js");
+import_from_local("links-and-mark-decorations.js");
 
 const schema = new Schema({
     nodes: {
@@ -145,7 +146,9 @@ function steamrollMark(mark) {
         if (state.selection.$head.marks().length == 0 || (state.selection.$head.marks().length > 0 && state.selection.$head.marks()[0].type.name != mark.name)) {
             // We were not in a mark, so it needs to be decorated. Or, we need to redecorate because an old mark is replaced
             createNewMark = true;
-            nextFrame(() => {decorateMark(getDeepestElementAtSelection());});
+
+            // unlinked on first creation
+            nextFrame(() => {decorateMark(getDeepestElementAtSelection(), true);});
         } else {
             // We were in a mark, so all marks should be undecorated. 
             const div = document.createElement("div");
@@ -278,21 +281,6 @@ function exitCommand(state, dispatch) {
 const toggleBold = steamrollMark(schema.marks.strong);
 const toggleItalics = steamrollMark(schema.marks.em);
 
-function noSingleZeroWidthSpaces(state, dispatch) {
-    // If we are backspacing into a zero width space for a mark, delete the mark
-    const currentElement = getDeepestElementAtSelection();
-    if (currentElement && currentElement.innerText == "\u200b") {
-        
-        let tr = state.tr;
-        let curpos = state.selection.$head.pos;
-
-        tr = tr.delete(curpos - 1, curpos);
-        tr = tr.setStoredMarks([]);
-        dispatch(tr);
-        return true;
-    }
-}
-
 editor = new EditorView(editorElement, {
     state: EditorState.create({
         doc: DOMParser.fromSchema(schema).parse(editorElement),
@@ -385,29 +373,6 @@ function getDeepestElementAtSelection() {
     return null;
 }
 
-// Save whether or not we want to create a new (empty) mark tag
-let createNewMark = false;
-
-function decorateMark(element) {
-    if (element) {
-        // First, unselect selected elements (copy so that .remove() doesnt mess up loop)
-        const selectedElements = [...document.getElementsByClassName("selected-mark")];
-        for (let selectedElement of selectedElements) {
-            // If the mark has *just* a zero width space, it is invisible and unusable. Delete it!
-            if (element !== selectedElement && selectedElement.innerText == "\u200b") {
-                selectedElement.remove();
-            } else if (element !== selectedElement) {
-                selectedElement.classList.remove("selected-mark");
-            }
-        }
-
-        // Select selected element (only if editor.state.storedMarks is null i.e. we are in a mark)
-        if (markTags.has(element.tagName) && !!!editor.state.storedMarks) {
-            nextFrame(() => {element.classList.add("selected-mark");})
-        }
-    }
-}
-
 const commandDropDown = document.getElementById("command-drop-down");
 
 function handleButtonChanges() {
@@ -484,9 +449,6 @@ function handleButtonChanges() {
     }
 }
 
-// Valid tagNames for mark tags (FIXME this needs changing if a mark tag changes...)
-const markTags = new Set(["H2", "H3", "CODE", "EM", "STRONG", "A"]);
-
 document.addEventListener('selectionchange', () => {
     // Highlight mathquill elements if needed
     nextFrame(refreshHighlights); 
@@ -495,112 +457,10 @@ document.addEventListener('selectionchange', () => {
     nextFrame(handleButtonChanges);
 });
 
-document.addEventListener('click', (event) => {
-    if (ctrlKey(event) && event.target.classList.contains('reference')) {
-        // Handle moving to label for reference
-        let foundTarget = false;
-        let searchText = event.target.innerText.replaceAll("\u200b", ""); // silly mathquill, no zero-width spaces please!
-
-        // Only search for stuff after semicolon
-        searchText = searchText.substring(searchText.indexOf(":") + 1);
-        
-        // We will attempt to scroll to a section/mq label with this inner text
-        $('.mq-label:contains("' + searchText + '"), h2:contains("' + searchText + '"), h3:contains("' + searchText + '")').get().forEach((label) => {
-            // if (label.compareDocumentPosition(event.target) & 0x04) {
-            label.scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest',
-                inline: 'nearest'
-            });
-            foundTarget = true;
-            // }
-        });
-
-        if (!foundTarget) {
-            // Maybe belongs to a text label?
-            $('.label:contains("' + searchText + '")').get().forEach((label) => {
-                // if (label.compareDocumentPosition(event.target) & 0x02) {
-                label.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'nearest',
-                    inline: 'nearest'
-                });
-                foundTarget = true;
-                // }
-            });
-        }
-
-        if (!foundTarget) {
-            // Maybe belongs to a theorem?
-            $('.theorem:contains("' + searchText + '")').get().forEach((label) => {
-                // if (label.compareDocumentPosition(event.target) & 0x04) {
-                label.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'nearest',
-                    inline: 'nearest'
-                });
-                // }
-            });
-        }
-    } else if (ctrlKey(event) && event.target.classList.contains('citation')) {
-        // Check bibtex entries somewhere for a url to jump to...
-        // Get all bibtex
-        const bibtexes = document.querySelectorAll("div[data-language='BibTeX']");
-        const searchText = event.target.innerText.replaceAll("\u200b", "");
-        for (var bibtex of bibtexes) {
-            const bibtexEntries = bibtex.innerText.split("@");
-            // Loop through this bibtext's entries:
-            for (var entry of bibtexEntries) {
-                // Check if this entry has the article title the same of the search text
-                const articleName = entry.substring(entry.indexOf("{") + 1, entry.indexOf(","));
-                if (articleName.trim() == searchText.trim()) {
-                    // We found a matching entry! Now find the URL and jump to it
-                    if (entry.includes("url")) {
-                        // Get the url line
-                        let url = entry.substring(entry.indexOf("url") + 3);
-                        url = url.substring(url.indexOf("{") + 1, url.indexOf("}"));
-
-                        // url should contain the exact url since urls cant contain { or }
-                        // so jump!
-                        window.open(url, '_blank').focus();
-                        
-                        return;
-                    } else {
-                        // There is no url... so instead just scroll this bibtex into view
-                        bibtex.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'nearest',
-                            inline: 'nearest'
-                        });
-
-                        return;
-                    }
-                }
-            }
-        }
-    } else {
-        // This is just a click, handle mark decorations
-        nextFrame(() => {decorateMark(getDeepestElementAtSelection());});
-    }
-})
-
-function decorateAndCreateIfNeeded() {
-    // Decorate the current element, place in zero width space to make it visible
-    const element = getDeepestElementAtSelection();
-    decorateMark(element);
-
-    if (createNewMark && editor.state.storedMarks && editor.state.storedMarks.length == 1) {
-        // This happens when a mark is triggered by prosemirror. However, it doesnt create a tag
-        // Since we want decorations, this force creates the tag
-        typeText("\u200b");
-        nextFrame(() => {decorateMark(getDeepestElementAtSelection());});
-        createNewMark = false;
-    }
-}
-
 document.addEventListener('keydown', (event) => {
     // Refresh mark decorations when typing
-    nextFrame(decorateAndCreateIfNeeded);
+    // Check for links while typing
+    nextFrame(() => {decorateAndCreateIfNeeded(true)});
 
     // Handle keybinds
     if (ctrlKey(event) && event.key.toLowerCase() == "s") {

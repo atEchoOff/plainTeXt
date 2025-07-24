@@ -381,7 +381,7 @@ function latext(returnLaTeX) {
             let theoremText = line.substring(line.indexOf("}") + 1);
 
             output.push("\\begin{" + cmd + "}");
-            output.push("\\label{" + cmd + ":" + theoremName + "}");
+            output.push("\\label{" + theoremName + "}");
             output.push(theoremText);
             output.push("\\end{" + cmd + "}");
             if (cmd === "theorem" || cmd === "lemma") {
@@ -570,6 +570,8 @@ async function openFile(create) {
     editor.dispatch(tr);
 
     triggerPasteEvent(contents);
+
+    nextFrame(decorateLinkedMarks);
 }
 
 async function saveFile() {
@@ -581,6 +583,8 @@ async function saveFile() {
     const writable = await fileHandle.createWritable();
     await writable.write(contents);
     await writable.close();
+
+    decorateLinkedMarks();
 
     console.log("Saved!");
 }

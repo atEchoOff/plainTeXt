@@ -108,6 +108,16 @@ p {
     content: "";
 }
 
+.unlinked-mark {
+    color: white !important;
+    font-weight: bolder;
+    background-color: red;
+}
+
+.unlinked-mark:hover:not(.selected-mark):not(.label)::after {
+    content: "Link not found";
+}
+
 .reference.selected-mark::before {
     content: "\\eqref{";
 }
