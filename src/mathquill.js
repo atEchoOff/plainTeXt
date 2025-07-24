@@ -84,43 +84,43 @@ function fragToTextFrag(fragment, makeSafe) {
                 const textNode = schema.text("\\textit{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "link") {
-                const textNode = schema.text("\\eqref{" + safeLaTeX + "}");
+                const textNode = schema.text("\\eqref{" + child.text + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "code") {
                 const textNode = schema.text("\\texttt{" + safeLaTeX + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "section") {
-                const textNode = schema.text("\\section{" + safeLaTeX + "}");
+                const textNode = schema.text("\\section{" + child.text + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "subsection") {
-                const textNode = schema.text("\\subsection{" + safeLaTeX + "}");
+                const textNode = schema.text("\\subsection{" + child.text + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "citation") {
-                const textNode = schema.text("\\cite{" + safeLaTeX + "}");
+                const textNode = schema.text("\\cite{" + child.text + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "theorem") {
-                const textNode = schema.text("\\theorem{" + safeLaTeX + "}");
+                const textNode = schema.text("\\theorem{" + child.text + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "qed") {
                 const textNode = schema.text("\\qed{ }");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "label") {
-                const textNode = schema.text("\\label{" + safeLaTeX + "}");
+                const textNode = schema.text("\\label{" + child.text + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "definition") {
-                const textNode = schema.text("\\definition{" + safeLaTeX + "}");
+                const textNode = schema.text("\\definition{" + child.text + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "proposition") {
-                const textNode = schema.text("\\proposition{" + safeLaTeX + "}");
+                const textNode = schema.text("\\proposition{" + child.text + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "corollary") {
-                const textNode = schema.text("\\corollary{" + safeLaTeX + "}");
+                const textNode = schema.text("\\corollary{" + child.text + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "lemma") {
-                const textNode = schema.text("\\lemma{" + safeLaTeX + "}");
+                const textNode = schema.text("\\lemma{" + child.text + "}");
                 nodes.push(textNode);
             } else if (child.marks[0].type.name === "remark") {
-                const textNode = schema.text("\\remark{" + safeLaTeX + "}");
+                const textNode = schema.text("\\remark{" + child.text + "}");
                 nodes.push(textNode);
             }
         } else if (child.content) {
@@ -216,67 +216,67 @@ function textToFrag(pastedText) {
             lastIndex = offset + match.length;
         } else if (p7) {
             // This is a link
-            nodes.push(schema.text(unescapeLaTeX(p7), [schema.marks.link.create()]));
+            nodes.push(schema.text(p7, [schema.marks.link.create()]));
 
             lastIndex = offset + match.length;
         } else if (p9) {
-            // This is a link
+            // This is a verbatim
             nodes.push(schema.text(unescapeLaTeX(p9), [schema.marks.code.create()]));
 
             lastIndex = offset + match.length;
         } else if (p11) {
             // This is a section
-            nodes.push(schema.text(unescapeLaTeX(p11), [schema.marks.section.create()]));
+            nodes.push(schema.text(p11, [schema.marks.section.create()]));
 
             lastIndex = offset + match.length;
         } else if (p13) {
             // This is a subsection
-            nodes.push(schema.text(unescapeLaTeX(p13), [schema.marks.subsection.create()]));
+            nodes.push(schema.text(p13, [schema.marks.subsection.create()]));
 
             lastIndex = offset + match.length;
         } else if (p15) {
             // This is a citation
-            nodes.push(schema.text(unescapeLaTeX(p15), [schema.marks.citation.create()]));
+            nodes.push(schema.text(p15, [schema.marks.citation.create()]));
 
             lastIndex = offset + match.length;
         } else if (p17) {
             // This is a theorem
-            nodes.push(schema.text(unescapeLaTeX(p17), [schema.marks.theorem.create()]));
+            nodes.push(schema.text(p17, [schema.marks.theorem.create()]));
 
             lastIndex = offset + match.length;
         } else if (p19) {
-            // This is a theorem
+            // This is a qed
             nodes.push(schema.text(" ", [schema.marks.qed.create()]));
 
             lastIndex = offset + match.length;
         } else if (p21) {
             // This is a label
-            nodes.push(schema.text(unescapeLaTeX(p21), [schema.marks.label.create()]));
+            nodes.push(schema.text(p21, [schema.marks.label.create()]));
 
             lastIndex = offset + match.length;
         } else if (p23) {
             // This is a definition
-            nodes.push(schema.text(unescapeLaTeX(p23), [schema.marks.definition.create()]));
+            nodes.push(schema.text(p23, [schema.marks.definition.create()]));
 
             lastIndex = offset + match.length;
         } else if (p25) {
             // This is a proposition
-            nodes.push(schema.text(unescapeLaTeX(p25), [schema.marks.proposition.create()]));
+            nodes.push(schema.text(p25, [schema.marks.proposition.create()]));
 
             lastIndex = offset + match.length;
         } else if (p27) {
             // This is a corollary
-            nodes.push(schema.text(unescapeLaTeX(p27), [schema.marks.corollary.create()]));
+            nodes.push(schema.text(p27, [schema.marks.corollary.create()]));
 
             lastIndex = offset + match.length;
         } else if (p29) {
             // This is a lemma
-            nodes.push(schema.text(unescapeLaTeX(p29), [schema.marks.lemma.create()]));
+            nodes.push(schema.text(p29, [schema.marks.lemma.create()]));
 
             lastIndex = offset + match.length;
         } else if (p31) {
             // This is a remark
-            nodes.push(schema.text(unescapeLaTeX(p31), [schema.marks.remark.create()]));
+            nodes.push(schema.text(p31, [schema.marks.remark.create()]));
 
             lastIndex = offset + match.length;
         } else if (p33) {
