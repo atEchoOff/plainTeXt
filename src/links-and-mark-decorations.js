@@ -147,10 +147,10 @@ function decorateMark(element, checkLinks, tryLabels, trySections, tryTheorems, 
     // If dictionaries exist, this is just for linking/unlinking, so ignore selection stuff.
     // If checkLinks, also check if it should be linked
 
-    // If textNode, we are in a math element. Do not decorate based on selections.
-    const textNode = element.classList.contains("mq-text-mode");
-
     if (element) {
+        // If textNode, we are in a math element. Do not decorate based on selections.
+        const textNode = element.classList.contains("mq-text-mode");
+
         // First, unselect selected elements (copy so that .remove() doesnt mess up loop)
         if (!tryLabels && !textNode) {
             const selectedElements = [...document.getElementsByClassName("selected-mark")];
@@ -216,7 +216,8 @@ function decorateAndCreateIfNeeded(checkLinks) {
 document.addEventListener('click', (event) => {
     if (ctrlKey(event) && event.target.classList.contains('reference')) {
         // Handle moving to label for reference
-        const match = matchingLabel(event.target.innerHTML);
+        const match = matchingLabel(event.target.textContent);
+        document.activeElement.blur(); // If mathquill element, this will fix scroll block issue
 
         if (match) {
             // We have a label, scroll to it!
@@ -227,7 +228,7 @@ document.addEventListener('click', (event) => {
             });
         }
     } else if (ctrlKey(event) && event.target.classList.contains('citation')) {
-        const [linkType, value] = matchingCitation(event.target.innerHTML);
+        const [linkType, value] = matchingCitation(event.target.textContent);
 
         if (linkType === "link") {
             // Jump to link!
