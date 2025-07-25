@@ -4,6 +4,30 @@
     color: #e0f2f1; /* Light Teal */
 }
 
+.darkgreen .citation {
+    color: #FF6978;
+}
+
+.darkgreen #editor::-webkit-scrollbar {
+    width: 12px;
+}
+
+.darkgreen #editor::-webkit-scrollbar-track {
+    background: #06100c;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.darkgreen #editor::-webkit-scrollbar-thumb {
+    background-color: #26a69a;
+    border-radius: 20px;
+    border: 3px solid #06100c;
+}
+
+.darkgreen #editor::-webkit-scrollbar-thumb:hover {
+    background-color: #64ffda; /* Material Design Teal A200 */
+}
+
 body.darkgreen {
     background-color: #081410; /* Very Dark Green */
 }
@@ -97,5 +121,5 @@ body.darkgreen {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 .darkgreen .mq-table td {
-    background-color: #1a4d3d; /* Lighter than editor background */
+    background-color: #1a4d3d;
 }
