@@ -55,35 +55,35 @@ body.darkblue {
     background-color: rgba(72, 209, 204, 0.5); /* Translucent Turquoise */
 }
 
-.darkblue #plainTeXt-dropdown {
+.darkblue #button-container #plainTeXt-dropdown {
     background-color: #008080; /* Teal */
 }
 
-.darkblue button {
+.darkblue #button-container button {
     color: #88c0be; /* Muted Light Cyan */
 }
 
-.darkblue button[title]::after {
+.darkblue #button-container button[title]::after {
     background-color: #0d2c2d; /* Very Dark Teal */
     border-color: #3a9f9a; /* Muted Turquoise */
 }
 
-.darkblue button:hover {
+.darkblue #button-container button:hover {
     background-color: #0d2c2d;
     border-color: #50b2ad; /* Muted Lighter Turquoise */
 }
 
-.darkblue button:disabled, .darkblue button[disabled] {
+.darkblue #button-container button:disabled, .darkblue #button-container button[disabled] {
     color: #4a7c7a; /* Muted Teal */
     background-color: #0d2c2d;
 }
 
-.darkblue .tab-button {
+.darkblue #button-container .tab-button {
     background-color: #071a1c;
     border-color: #008080;
 }
 
-.darkblue .dropdown-content {
+.darkblue #button-container .dropdown-content {
     background-color: #071a1c;
     border-color: #008080;
 }
@@ -98,7 +98,7 @@ body.darkblue {
     color: #a7d8d5;
 }
 
-#dark-blue-button {
+#button-container #dark-blue-button {
     background-color: #071a1c;
     border-color: #008080;
     color: #88c0be;

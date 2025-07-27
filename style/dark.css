@@ -51,35 +51,35 @@ body.dark {
     background-color: rgba(255, 255, 255, 0.424);
 }
 
-.dark #plainTeXt-dropdown {
+.dark #button-container #plainTeXt-dropdown {
     background-color: rgb(91, 60, 4);
 }
 
-.dark button {
+.dark #button-container button {
     color: #c8beae;
 }
 
-.dark button[title]::after {
+.dark #button-container button[title]::after {
     background-color: #0c0b09;
     border-color: #635c50;
 }
 
-.dark button:hover {
+.dark #button-container button:hover {
     background-color: #0c0b09;
     border-color: #635c50;
 }
 
-.dark button:disabled, .dark button[disabled] {
+.dark #button-container button:disabled, .dark #button-container button[disabled] {
     color: #635c50;
     background-color: #0c0b09;
 }
 
-.dark .tab-button {
+.dark #button-container .tab-button {
     background-color: #060504;
     border-color: #2e2a24;
 }
 
-.dark .dropdown-content {
+.dark #button-container .dropdown-content {
     background-color: #000000;
     border-color: #2e2a24;
 }
@@ -94,7 +94,7 @@ body.dark {
     color: rgb(227, 227, 227);
 }
 
-#dark-mode-button {
+#button-container #dark-mode-button {
     color: white;
     background-color: black;
 }

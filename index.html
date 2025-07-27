@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="style/darkblue.css">
     <link rel="stylesheet" href="style/darkred.css">
     <link rel="stylesheet" href="style/darkgreen.css">
+
+    <link rel="stylesheet" href="style/find.css">
 <body>
     <div id="button-container">
         <div class="dropdown">
@@ -103,6 +105,32 @@
         </div>
     </div>
     <div id="editor" spellcheck="false"></div>
+
+    <div id="search-bar" class="hidden">
+        <input type="text" id="search-input" placeholder="Find">
+        
+        <button id="search-button" title="Search">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </button>
+        
+        <div id="search-results-count">0/0</div>
+        
+        <div class="divider"></div>
+        
+        <button id="prev-button" title="Previous match">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
+        </button>
+        
+        <button id="next-button" title="Next match">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+        </button>
+        
+        <button id="close-search-button" title="Close search bar">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.607a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+        </button>
+    </div>
     <script src="dist/mathquill.js"></script>
     <script src="dist/output.js"></script>
 

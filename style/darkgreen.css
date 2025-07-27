@@ -55,35 +55,35 @@ body.darkgreen {
     background-color: rgba(100, 221, 23, 0.5); /* Translucent Light Green */
 }
 
-.darkgreen #plainTeXt-dropdown {
+.darkgreen #button-container #plainTeXt-dropdown {
     background-color: #00695C; /* Material Design Green 800 */
 }
 
-.darkgreen button {
+.darkgreen #button-container button {
     color: #a7ffeb; /* Material Design Teal A100 */
 }
 
-.darkgreen button[title]::after {
+.darkgreen #button-container button[title]::after {
     background-color: #00251a; /* Very Dark Green */
     border-color: #26a69a; /* Material Design Teal 400 */
 }
 
-.darkgreen button:hover {
+.darkgreen #button-container button:hover {
     background-color: #00251a;
     border-color: #64ffda; /* Material Design Teal A200 */
 }
 
-.darkgreen button:disabled, .darkgreen button[disabled] {
+.darkgreen #button-container button:disabled, .darkgreen #button-container button[disabled] {
     color: #4a7c7a; /* Muted Teal */
     background-color: #00251a;
 }
 
-.darkgreen .tab-button {
+.darkgreen #button-container .tab-button {
     background-color: #0c1f1a;
     border-color: #00695C;
 }
 
-.darkgreen .dropdown-content {
+.darkgreen #button-container .dropdown-content {
     background-color: #0c1f1a;
     border-color: #00695C;
 }
@@ -98,7 +98,7 @@ body.darkgreen {
     color: #80cbc4; /* Material Design Teal 200 */
 }
 
-#dark-green-button {
+#button-container #dark-green-button {
     background-color: #0c1f1a;
     border-color: #00695C;
     color: #a7ffeb;

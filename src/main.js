@@ -59,6 +59,7 @@ import_from_local("codeblock.js");
 import_from_local("virtualscroll.js");
 import_from_local("links-and-mark-decorations.js");
 import_from_local("ButtonManager.js");
+import_from_local("Find.js");
 
 const schema = new Schema({
     nodes: {

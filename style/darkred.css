@@ -51,35 +51,35 @@ body.darkred {
     background-color: rgba(209, 72, 72, 0.5); /* Translucent Red */
 }
 
-.darkred #plainTeXt-dropdown {
+.darkred #button-container #plainTeXt-dropdown {
     background-color: #800000; /* Maroon */
 }
 
-.darkred button {
+.darkred #button-container button {
     color: #d4a3a3; /* Muted Light Red */
 }
 
-.darkred button[title]::after {
+.darkred #button-container button[title]::after {
     background-color: #2d0d0d; /* Very Dark Red */
     border-color: #9f3a3a; /* Muted Red */
 }
 
-.darkred button:hover {
+.darkred #button-container button:hover {
     background-color: #2d0d0d;
     border-color: #b25050; /* Muted Lighter Red */
 }
 
-.darkred button:disabled, .darkred button[disabled] {
+.darkred #button-container button:disabled, .darkred #button-container button[disabled] {
     color: #7c4a4a; /* Muted Dark Red */
     background-color: #2d0d0d;
 }
 
-.darkred .tab-button {
+.darkred #button-container .tab-button {
     background-color: #1c0707;
     border-color: #800000;
 }
 
-.darkred .dropdown-content {
+.darkred #button-container .dropdown-content {
     background-color: #1c0707;
     border-color: #800000;
 }
@@ -94,7 +94,7 @@ body.darkred {
     color: #d8a7a7;
 }
 
-#dark-red-button {
+#button-container #dark-red-button {
     background-color: #1c0707;
     border-color: #800000;
     color: #d4a3a3;

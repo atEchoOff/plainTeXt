@@ -256,11 +256,11 @@ p:has(.qed) {
     font-size:xx-large;
 }
 
-#plainTeXt-dropdown {
+#button-container #plainTeXt-dropdown {
     background-color: rgb(255, 198, 93);
 }
 
-button {
+#button-container button {
     display: block;
     margin: 0;
     width: 100%;
@@ -276,7 +276,7 @@ button {
     position: relative;
 }
 
-button[title]::after {
+#button-container button[title]::after {
     opacity: 0; /* Do not see this until hovering... allows transition */
     content: attr(title);
     position: absolute;
@@ -301,24 +301,24 @@ button[title]::after {
     transition: left 0.1s ease-out, opacity 0.1s ease-out;
 }
 
-button[title]:hover::after {
+#button-container button[title]:hover::after {
     /* Move button to the right when hovering */
     opacity: 1;
     left: 100%;
     margin-left: 8px;
 }
 
-button:hover {
+#button-container button:hover {
     background-color: #f3f4f6;
     border-color: #9ca3af;
 }
 
-.dropdown-content button:hover {
+#button-container .dropdown-content button:hover {
     border: none; /* Ensure no border appears on hover */
 }
 
-button:disabled,
-button[disabled] {
+#button-container button:disabled,
+#button-container button[disabled] {
     color: #9ca3af;
     background-color: #f3f4f6;
     cursor: not-allowed;
@@ -326,7 +326,7 @@ button[disabled] {
 }
 
 /* The main tab buttons ("File", "Math", etc.) */
-.tab-button {
+#button-container .tab-button {
     display: inline-block; /* Overrides the 100% width from the general button style */
     width: auto;
     text-align: center;
@@ -336,14 +336,14 @@ button[disabled] {
 }
 
 /* This is the container for each tab, like "File" and its buttons */
-.dropdown {
+#button-container .dropdown {
     display: inline-block; /* Allows tabs to sit side-by-side */
     position: relative; /* Positioning the dropdown */
     margin: 0 4px;
 }
 
 /* The content that appears on hover (the list of buttons) */
-.dropdown-content {
+#button-container .dropdown-content {
     display: block;
     position: absolute;
     z-index: 9998; /* below pyscript loading screen */
@@ -363,14 +363,14 @@ button[disabled] {
 }
 
 /* Show the dropdown content when hovering over the dropdown container */
-.dropdown:hover:not(:has(.tab-button[disabled])) .dropdown-content {
+#button-container .dropdown:hover:not(:has(.tab-button[disabled])) .dropdown-content {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
 }
 
 /* Add a margin to all but the last button in a dropdown */
-.dropdown-content button:not(:last-child) {
+#button-container .dropdown-content button:not(:last-child) {
     margin-bottom: 4px;
 }
 
@@ -403,7 +403,7 @@ button[disabled] {
         padding: 10px 5px;
     }
 
-    button {
+    #button-container button {
         /* Makes buttons a bit smaller on smaller screens */
         padding: 6px 12px;
         font-size: 13px;
@@ -418,7 +418,7 @@ button[disabled] {
     background-color: rgb(255, 189, 189);
 }
 
-#light-mode-button {
+#button-container #light-mode-button {
     color: black;
     background-color: rgb(210, 210, 210);
 }
