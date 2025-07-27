@@ -89,6 +89,15 @@ class Find {
                         this.searchResults.push([pDOM, pos + index, pos + index + target.length]);
                     }
                 }
+            } else if (node.type.name === "mathquill" && node.attrs.latex.includes(target)) {
+                let pDOM = editor.nodeDOM(pos);
+                if (pDOM) {
+                    while (pDOM.tagName !== "P") {
+                        pDOM = pDOM.parentElement;
+                    }
+
+                    this.searchResults.push([pDOM, editor.nodeDOM(pos), "math"]);
+                }
             }
         });
 
@@ -117,11 +126,22 @@ class Find {
             inline: 'nearest'
         });
 
-        // Highlight the text
-        let tr = editor.state.tr;
-        let selection = TextSelection.create(tr.doc, start, end);
-        editor.dispatch(tr.setSelection(selection).scrollIntoView());
-        editor.focus();
+        if (end === "math") {
+            // This is a math element! Rather than selecting, focus once the scroll is done.
+            const focusOnStart = () => {
+                MQ(start).focus();
+                editorElement.removeEventListener("scrollend", focusOnStart);
+            };
+
+            editorElement.addEventListener("scrollend", focusOnStart);
+        } else {
+
+            // Highlight the text
+            let tr = editor.state.tr;
+            let selection = TextSelection.create(tr.doc, start, end);
+            editor.dispatch(tr.setSelection(selection).scrollIntoView());
+            editor.focus();
+        }
 
         // Update the resultCount text
         this.currentIndex = index;
