@@ -109,8 +109,12 @@ function isUnlinked(element, tryLabels, trySections, tryTheorems, tryCitations, 
 
     if (innerText.includes(",")) {
         // Return unlinked if ANY element is unlinked
-        return innerText.split(",").some((individualLink) => {
-            return isUnlinked(element, tryLabels, trySections, tryTheorems, tryCitations, individualLink.trim())
+        return innerText.split(",").map((s) => {return s.trim()}).some((individualLink) => {
+            if (individualLink.length == 0) {
+                return true;
+            }
+            
+            return isUnlinked(element, tryLabels, trySections, tryTheorems, tryCitations, individualLink)
         });
     }
 
