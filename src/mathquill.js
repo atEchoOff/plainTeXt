@@ -45,8 +45,8 @@ function escapeLaTeX(latex, makeSafe) {
                     .replaceAll("_", "\\_")
                     .replaceAll("{", "\\{")
                     .replaceAll("}", "\\}")
-                    .replaceAll("~", "\\textasciitilde{}")
-                    .replaceAll("^", "\\textasciicircum{}");
+                    .replaceAll("~", "\\textasciitilde ")
+                    .replaceAll("^", "\\textasciicircum ");
     } else {
         return latex;
     }
@@ -62,8 +62,8 @@ function unescapeLaTeX(latex) {
                 .replaceAll("\\_", "_")
                 .replaceAll("\\{", "{")
                 .replaceAll("\\}", "}")
-                .replaceAll("\\textasciitilde{}", "~")
-                .replaceAll("\\textasciicircum{}", "^");
+                .replaceAll("\\textasciitilde ", "~")
+                .replaceAll("\\textasciicircum ", "^");
 }
 
 function fragToTextFrag(fragment, makeSafe) {
