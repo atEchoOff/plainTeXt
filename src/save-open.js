@@ -553,6 +553,11 @@ async function openFile(create) {
     // Get file and contents
     const file = await fileHandle.getFile();
     let contents = await file.text();
+    setFileContents(file, contents);
+}
+
+function setFileContents(file, contents) {
+    // Set current contents to given string
     if (contents.includes("||")) {
         // Load previous image data from saved file
         // it will all go away once original paste event completes

@@ -526,3 +526,5 @@ if (!localStorage.hasOwnProperty("theme")) {
 }
 
 setTheme(localStorage.getItem("theme"));
+
+import_from_local("Demo.js");
