@@ -2,6 +2,8 @@
 
 ***Please*** do not pronounce this "plain-tekt" like you pronounce "TeX" from "LaTeX" or I will use whatever legal action is necessary to stop you from doing so. 
 
+Feel free to use my [demo](plaintext.bchristner.com), which renders my personal page in plainTeXt. The demo cannot save files, and is not intended for personal use. Feel free to download plainTeXt from the releases and use it for free!
+
 by [Brian Christner](https://github.com/atEchoOff)
 
 *plainTeXt* is a WYSIWYG LaTeX editor for taking readable notes, sketching, or drafting quickly. It is built with [ProseMirror](https://github.com/prosemirror) and my custom fork of [MathQuill](https://github.com/mathquill), [MathQuill](https://github.com/atEchoOff/MathQuill), which adds features such as matrices, figures, and tables, adds convenient shorthand, and fixes some small bugs. It has built-in and locally-run [SymPy](https://github.com/sympy/sympy) for evaluating complicated expressions, a math screenshot tool, and direct export to PDF available through my open source [LaTeX compilation server](https://github.com/atEchoOff/LaTeXServer).
