@@ -2,7 +2,7 @@
 
 ***Please*** do not pronounce this "plain-tekt" like you pronounce "TeX" from "LaTeX" or I will use whatever legal action is necessary to stop you from doing so. 
 
-Feel free to use my [demo](plaintext.bchristner.com), which renders my personal page in plainTeXt. The demo cannot save files, and is not intended for personal use. Feel free to download plainTeXt from the releases and use it for free!
+Feel free to use my [demo](https://plaintext.bchristner.com), which renders my personal page in plainTeXt. The demo cannot save files, and is not intended for personal use. Feel free to download plainTeXt from the releases and use it for free!
 
 by [Brian Christner](https://github.com/atEchoOff)
 
