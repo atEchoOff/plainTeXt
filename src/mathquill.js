@@ -37,7 +37,7 @@ function focusMathQuillNode(view, pos, isLeft) {
 function escapeLaTeX(latex, makeSafe) {
     // Escape dangerous characters like \ and & from text
     if (makeSafe) {
-        return latex.replaceAll("\\", "\\textbackslash{}")
+        return latex.replaceAll("\\", "\\textbackslash ")
                     .replaceAll("&", "\\&")
                     .replaceAll("#", "\\#")
                     .replaceAll("%", "\\%")
@@ -54,7 +54,7 @@ function escapeLaTeX(latex, makeSafe) {
 
 function unescapeLaTeX(latex) {
     // Unescape dangerous characters from text.
-    return latex.replaceAll("\\textbackslash{}", "\\")
+    return latex.replaceAll("\\textbackslash ", "\\")
                 .replaceAll("\\&", "&")
                 .replaceAll("\\#", "#")
                 .replaceAll("\\%", "%")
