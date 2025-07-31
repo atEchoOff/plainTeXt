@@ -37,14 +37,16 @@ function focusMathQuillNode(view, pos, isLeft) {
 function escapeLaTeX(latex, makeSafe) {
     // Escape dangerous characters like \ and & from text
     if (makeSafe) {
-        return latex.replaceAll("\\", "\\\\")
+        return latex.replaceAll("\\", "\\textbackslash{}")
                     .replaceAll("&", "\\&")
                     .replaceAll("#", "\\#")
                     .replaceAll("%", "\\%")
                     .replaceAll("$", "\\$")
                     .replaceAll("_", "\\_")
                     .replaceAll("{", "\\{")
-                    .replaceAll("}", "\\}");
+                    .replaceAll("}", "\\}")
+                    .replaceAll("~", "\\textasciitilde{}")
+                    .replaceAll("^", "\\textasciicircum{}");
     } else {
         return latex;
     }
@@ -52,14 +54,16 @@ function escapeLaTeX(latex, makeSafe) {
 
 function unescapeLaTeX(latex) {
     // Unescape dangerous characters from text.
-    return latex.replaceAll("\\\\", "\\")
+    return latex.replaceAll("\\textbackslash{}", "\\")
                 .replaceAll("\\&", "&")
                 .replaceAll("\\#", "#")
                 .replaceAll("\\%", "%")
                 .replaceAll("\\$", "$")
                 .replaceAll("\\_", "_")
                 .replaceAll("\\{", "{")
-                .replaceAll("\\}", "}");
+                .replaceAll("\\}", "}")
+                .replaceAll("\\textasciitilde{}", "~")
+                .replaceAll("\\textasciicircum{}", "^");
 }
 
 function fragToTextFrag(fragment, makeSafe) {
